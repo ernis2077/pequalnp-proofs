@@ -2306,9 +2306,11 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                       have hyget : (C.wires (List.ofFn xv)).getD y1 false = true :=
                         Bool.and_elim_right hand
                       have hxv1 : xv ⟨x1, hx1n⟩ = true := by
-                        simpa [wires_input C xv x1 hx1n, List.getD_eq_getElem?_getD] using hxget
+                        have hin := wires_input C xv x1 hx1n
+                        rw [← hin]; exact hxget
                       have hyv1 : xv ⟨y1, hy1n⟩ = true := by
-                        simpa [wires_input C xv y1 hy1n, List.getD_eq_getElem?_getD] using hyget
+                        have hin := wires_input C xv y1 hy1n
+                        rw [← hin]; exact hyget
                       have hkE := wires_gate_ofFn C (fun t => decide (t = uE ∨ t = vE)) k gK hgK
                       rw [hopK, hKinp] at hkE
                       simp only [GateOp.eval, List.map_cons, List.map_nil, List.all_cons, List.all_nil,
@@ -2321,16 +2323,14 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                         rw [← hkE]; exact hk_on_e
                       have hx_edge : ⟨x1, hx1n⟩ = uE ∨ ⟨x1, hx1n⟩ = vE := by
                         have hxw := Bool.and_elim_left hk_e_and
-                        have hxw' : (decide (⟨x1, hx1n⟩ = uE ∨ ⟨x1, hx1n⟩ = vE) : Bool) = true := by
-                          simpa [wires_input C (fun t => decide (t = uE ∨ t = vE)) x1 hx1n,
-                            List.getD_eq_getElem?_getD] using hxw
-                        exact of_decide_eq_true hxw'
+                        have hin := wires_input C (fun t => decide (t = uE ∨ t = vE)) x1 hx1n
+                        rw [hin] at hxw
+                        exact of_decide_eq_true hxw
                       have hy_edge : ⟨y1, hy1n⟩ = uE ∨ ⟨y1, hy1n⟩ = vE := by
                         have hyw := Bool.and_elim_right hk_e_and
-                        have hyw' : (decide (⟨y1, hy1n⟩ = uE ∨ ⟨y1, hy1n⟩ = vE) : Bool) = true := by
-                          simpa [wires_input C (fun t => decide (t = uE ∨ t = vE)) y1 hy1n,
-                            List.getD_eq_getElem?_getD] using hyw
-                        exact of_decide_eq_true hyw'
+                        have hin := wires_input C (fun t => decide (t = uE ∨ t = vE)) y1 hy1n
+                        rw [hin] at hyw
+                        exact of_decide_eq_true hyw
                       have hle : ∀ i : Fin n,
                           (decide (i = uE ∨ i = vE) : Bool) = true → xv i = true := by
                         intro i hi
