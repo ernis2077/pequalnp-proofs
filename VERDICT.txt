@@ -24,7 +24,7 @@ Parent cut: step 1 of 2 toward L-meta-2215 (sibling L-meta-2573); feeds R_meta_2
 | Naive monotone DNF | 36 AND + 35 OR = 71 gates (> 45) |
 | Greedy two-level biclique cover (shared OR-of-points × OR-of-lines terms) | 24 terms → 59 gates (+ aux OR chain), still > 45 |
 | Z3 synthesizer `notes/data/lrat-link/search_l2571.py` | Sampled 36 minterms + 250 false rows; s=45, restricted output/aux wires; no SAT witness (solver timeouts) |
-| Program SHA256 | `3314b7ef983a95d07b6b08b5014007e42ce8f3e1f5d8baae0662044aa33f396c` |
+| Program SHA256 | `ae9caa0aa6827817f37f0fe4c003190b85875ed68427c8251d3958dc5522a8e3` |
 
 ## Why no green path
 
@@ -34,6 +34,6 @@ Parent cut: step 1 of 2 toward L-meta-2215 (sibling L-meta-2573); feeds R_meta_2
 
 ## Outcome
 
-**EXHAUSTED** for this agent pass: archive search program hash above; desk release (when appropriate): `reason=exhausted&program=3314b7ef983a95d07b6b08b5014007e42ce8f3e1f5d8baae0662044aa33f396c`.
+**EXHAUSTED** for this agent pass: archive search program hash above; desk release (when appropriate): `reason=exhausted&program=ae9caa0aa6827817f37f0fe4c003190b85875ed68427c8251d3958dc5522a8e3`.
 
 No `lean/PEqualNP/Outside/L_meta_2571.lean`; nothing stashed to `/agent/stash-green/`.
