@@ -2228,14 +2228,16 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                       | false => simp [hkX, id_eq, Bool.false_and, Bool.and_false]
                       | true =>
                         have hwX := hcopyk x (by simpa [hkX])
-                        simp [hkX, hwX, id_eq]
+                        simp only [hkX, id_eq]
+                        simpa [List.getD_eq_getElem?_getD] using hwX
                     · simp only [hin, GateOp.eval, List.map_cons, List.map_nil, List.all_cons,
                         List.all_nil, Bool.and_true, hwlt, show n + k < n + b by omega, ↓reduceIte]
                       cases hkX : (C.wires (List.ofFn x)).getD (n + k) false with
                       | false => simp [hkX, id_eq, Bool.false_and, Bool.and_false]
                       | true =>
                         have hwX := hcopyk x (by simpa [hkX])
-                        simp [hkX, hwX, id_eq]
+                        simp only [hkX, id_eq]
+                        simpa [List.getD_eq_getElem?_getD] using hwX
                   exact hkvals.trans hjwire.symm)
                 (by intro h; cases h)
             exact hnot_smaller C' hm' (by rw [← hCsize]; exact hsz') heq'
@@ -2259,14 +2261,16 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                         | false => simp [hwX, id_eq, Bool.false_and, Bool.and_false]
                         | true =>
                           have hkX := hcopyw x (by simpa [hwX])
-                          simp [hwX, hkX, id_eq]
+                          simp only [hwX, id_eq]
+                          simpa [List.getD_eq_getElem?_getD] using hkX
                       · simp only [hin, GateOp.eval, List.map_cons, List.map_nil, List.all_cons,
                           List.all_nil, Bool.and_true, hwlt, show n + k < n + b by omega, ↓reduceIte]
                         cases hwX : (C.wires (List.ofFn x)).getD w false with
                         | false => simp [hwX, id_eq, Bool.false_and, Bool.and_false]
                         | true =>
                           have hkX := hcopyw x (by simpa [hwX])
-                          simp [hwX, hkX, id_eq]
+                          simp only [hwX, id_eq]
+                          simpa [List.getD_eq_getElem?_getD] using hkX
                     exact hwvals.trans hjwire.symm)
                   (by intro h; cases h)
               exact hnot_smaller C' hm' (by rw [← hCsize]; exact hsz') heq'
@@ -2281,8 +2285,8 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                   have hKinp : gK.inputs = [x1, y1] := by
                     have hg0 := List.getElem?_eq_getElem hklen
                     have hgeq : gK = C.gates[k]'hklen := by
-                    have hEq : some gK = some (C.gates[k]'hklen) := by rw [← hgK, hg0]
-                    exact Option.some.inj hEq
+                      have hEq : some gK = some (C.gates[k]'hklen) := by rw [← hgK, hg0]
+                      exact Option.some.inj hEq
                     simpa [hgeq] using hxy1
                   have hx1n : x1 < n := by
                     by_contra
@@ -2436,7 +2440,7 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                         have teq : gA = gO := Option.some.inj (by rw [← hgA, hgO])
                         subst teq
                         have hneq : GateOp.and = GateOp.or → False := fun h => by cases h
-                      exact hneq (hopA.symm.trans hopO)
+                        exact hneq (hopA.symm.trans hopO)
                       · exact hmax m hmgt (by
                           obtain ⟨i, hAm, hAi, htg'⟩ := hbadm
                           exact ⟨i, hAm, hAi, htg'⟩)
