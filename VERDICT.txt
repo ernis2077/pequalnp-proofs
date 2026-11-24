@@ -1,57 +1,32 @@
-VERDICT: L-meta-2448
-Branch: cursor/l-meta-2448-49b5
-Disposition: missing_lemma (no PR; no green Lean proof)
-Lease: 07658b88-048c-4511-8ae6-03a37d9b2552 → release with reason=missing_lemma
+VERDICT: BLOCKED (L-meta-670)
 
-## Statement (desk JSON)
+Reason: missing_lemma
 
-For every n and graph G on Fin n, triangle-free and 4-cycle-free (opposite vertices equal on a 4-cycle), there exists a circuit C such that:
-- Monotone2 C
-- circuitFun n C = NestedCover.graphFun G ∅
-- C is minimum size among all Monotone2 circuits with that function
-- EdgeOwnership.HasStarProfile n G C
+Statement (from .pnp/L-meta-670.json):
+  ¬ PEqualNP.MetaComplexity.HasCircuitSize 9
+    (fun x : Fin 9 → Bool => (x 0 && x 1) || (x 1 && x 2) || (x 2 && x 3) || (x 3 && x 4) || (x 4 && x 0) ||
+      (x 0 && x 5) || (x 1 && x 6) || (x 2 && x 7) || (x 3 && x 8) ||
+      (x 5 && x 7) || (x 6 && x 8) || (x 8 && x 5)) 15
 
-## Placement in the fleet cut
+Branch: cursor/l-meta-670-49b5
+Target: lean/PEqualNP/Outside/L_meta_670.lean (imports Mathlib + PEqualNP.Defs only; not created)
 
-This gap is hypothesis `h1` in `lean/PEqualNP/Outside/R_meta_1031_3.lean` (reduction toward L-meta-1031). Sibling step L-meta-2450 is `h2` (star profile + minimality ⇒ every AND gate owns some edge on the graph). Together they imply the full L-meta-1031 star-ownership statement.
+What exists:
+- Positive upper bound: L_meta_1001 (16-gate witness).
+- Reduction skeleton: R_meta_670_713 (first-gate normalize + 2 NOT + 6 symmetric pair cases → size 16).
+- Alternate split: R_meta_670_718 (clean minimum reps on wires 4,6,7) — needs child steps.
+- One SAT certificate case finished: L_meta_1672 (+ siblings L_meta_1912/1914/2024/2042/2171) for first gate AND(4,6) with 16 ≤ C.size.
 
-Proving L-meta-2448 is therefore step 1 of the documented cut: existence of a **least** monotone fan-in-two circuit for the edge function that already has a **star profile** (not merely existence of some correct circuit).
+What is missing for a green L_meta_670 (per gap SKETCH and reductions):
+1. normalize: every ≤15-gate circuit for this function rewrites to a ≤15-gate circuit whose output wire is ¬(x i) or AND/OR of a canonical symmetric pair from [(0,1),(0,2),(0,3),(0,4),(0,6),(4,6)].
+2. For each symmetry class of first gate (14 NOT/pair cases + constant/copy), a desk row with a SAT certificate replayed in Lean (R_meta_1665–1676 family reductions exist as R_meta_*.lean hypotheses only; no matching L_meta_* children in repo except the (4,6) AND family above).
+3. Assembly: instantiate R_meta_670_713 inside L_meta_670 — must be inlined in the single Defs-only file (no L_meta imports R_meta modules today).
 
-## What exists in the repo
+Build notes:
+- `lake build PEqualNP.Outside.R_meta_670_713` succeeds (reduction alone).
+- No `L_meta_670.lean`; no green path without the case certificate fleet.
 
-| Artifact | Relevance |
-|----------|-----------|
-| `PEqualNP.EdgeOwnership.HasStarProfile` | Definition only; no checked theorem using it except reducers |
-| `R_meta_1031_1` | Proves L-meta-1031 from `hUsed` (minimal circuit + every AND owns an edge) + `hExchange` (cost on gates owning two incomparable edges); derives common center via triangle hypothesis — **different goal** (vertex star after exchange, not HasStarProfile on a given minimal C) |
-| `R_meta_1031_2` | Monotone existence / normalization toward `Owns`; does not prove HasStarProfile |
-| `R_meta_1772_773` | Bad-AND elimination toward `Owns`; assumes `existsLeast`, `pivotal`, `repair` |
-| `MetaComplexity.CoverCircuit.graph_upper` | Constructs a cover circuit computing the edge function; **no** HasStarProfile or minimality |
-| `L_meta_606` (WIP, not on main) | girth/C4-free **size** bounds; unrelated to star profile of least circuits |
-| Small-graph exhaust / exchange | Described in desk sketch only; **not** checked in Lean |
-
-No checked `L_meta_2448.lean` or statement file. Imports restricted to `Mathlib` + `PEqualNP.Defs`.
-
-## Why a green proof is not available here
-
-1. **Minimality** among all `Monotone2` circuits for `graphFun G ∅` requires a global argument (Nat.find over existence is easy; proving the witness is **the** minimum needs comparing all competitors). The fleet’s intended route is exhaustive search on small graphs plus an exchange argument — neither is formalized as a lemma importable from Defs alone.
-
-2. **HasStarProfile** on that **same** minimum circuit is strictly stronger than “build per-edge AND + OR tree” (which has star profile but is usually **not** minimal). The reduction’s step 2 (`h2`) assumes a minimal star-profile circuit and repairs toward `Owns`; step 1 must supply that object — it is not discharged by cover circuits or biclique-block cost.
-
-3. **No counterexample** was found in-repo; the statement aligns with the L-meta-1031 conjecture. Blocker is **missing formal lemmas** (exchange, small-graph certificates, or a definitional bridge from TopForm / least-AO to `Monotone2` + `HasStarProfile`), not `statement_seems_false`.
-
-## Recommended next lemmas (if continuing the cut)
-
-- Checked certificates: for each isomorphism class of (n,G) with n ≤ N, a concrete minimal `C` with `HasStarProfile` (or a refutation row).
-- `missing_lemma`: exchange “move owned edges to one vertex without growing size” under triangle + no-4-cycle, formalized for `Monotone2` and `Owns` / `HasStarProfile`.
-- Bridge: `IsMinimalMonoCircuit` / `TopForm.IsLeastAO` vs desk’s `Monotone2` minimum, if the fleet standardizes on one model.
-
-## Verification performed
-
-- Read `.pnp/L-meta-2448.json` and sibling `L-meta-1031.json`
-- Read `R_meta_1031_{1,2,3}.lean`, `EdgeOwnership.lean`, `TopForm.lean`, cover-circuit helpers
-- Branch `cursor/l-meta-2448-49b5` created from `origin/main`
-- No `lake build` green path for a proof module (no proof file committed)
-
-## Outcome
-
-**No green path.** Release desk lease `07658b88-048c-4511-8ae6-03a37d9b2552` with `reason=missing_lemma`.
+Next work (not done here):
+- Prove remaining first-gate case rows (see routes/lgp/own/filing/petersen/SKETCH.md on desk).
+- Prove normalize child for Petersen-minus-vertex on 9 wires.
+- Add L_meta_670.lean assembling R_meta_670_713 with those lemmas inlined (≈30 min once cases exist, per gap context).
