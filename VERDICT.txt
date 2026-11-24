@@ -1,0 +1,38 @@
+VERDICT: L-meta-2590
+Branch: cursor/l-meta-2590-49b5
+Disposition: missing_lemma (no green Lean proof; NO PR per instructions)
+Lease: 77287abc-d0bb-4e22-94fd-29cfd73b9a63 — beat OK (renewed); not released (per instruction: do not release L-meta-2732)
+
+## Statement (desk JSON)
+
+∀ (C : PEqualNP.CircuitLowerBounds.Circuit), PEqualNP.MetaComplexity.Monotone2 C →
+  C.size ≤ 19 →
+  ¬ ∀ (x : Fin 10 → Bool),
+    C.eval (List.ofFn x) =
+      Petersen edge OR (15 conjunctive clauses on Fin 10, standard labelling)
+
+Imports pinned: `PEqualNP.Defs` only.
+Step 1 of 2 toward cut of **L-meta-651** (sibling **L-meta-2592** not held here).
+
+## Work performed
+
+| Item | Result |
+|------|--------|
+| Branch `cursor/l-meta-2590-49b5` from `origin/main` | Done |
+| Lease renew `tools/pnp.sh beat L-meta-2590` | `lease until 2026-11-24T10:40:46.659Z` |
+| Main has witness size 20 | `lean/PEqualNP/Outside/L_meta_584.lean` (Monotone2, 20 gates) |
+| Related cut machinery (with NOT) | `pequalnp-2772/.../R_meta_651_*.lean` — hypotheses not in `PEqualNP.Defs` |
+| External mono SAT probes (`pequalnp-651/scratch/`) | wt≤2 CNF incomplete for full correctness; CEGAR `search_any19_light` still SAT at active rounds (no full UNSAT) |
+| Program SHA256 (wt2 probe) | `b08837741516d22c89d1c860816d4bd7bce83041ebd3b899f89a23ada7dea581` (`mono_wt2_verify.py`) |
+
+## Why no green path
+
+1. **No formal lower-bound lemma** in main with only `PEqualNP.Defs`: proving “no monotone ≤19” requires either a megabyte-scale certificate file (pattern `L_meta_984` / `L_meta_1437`, not importable under pinned imports) or a new structural reduction matching the 651 five-way first-gate split adapted to `Monotone2` (no NOT case).
+2. **Desk sketch**: in-house search split by first gate under graph automorphisms — 5 cases × 10 minutes, none decided; explicitly “hard and open”.
+3. **Computational evidence is not checkable in Lean** here: partial CNF (weight ≤ 2 on inputs) and inconclusive CEGAR do not yield `decide`/`certificate` lemmas under `PEqualNP.Outside.L_meta_2590`.
+
+## Outcome
+
+**missing_lemma** — needs checked UNSAT/certificate generator for monotone fan-in-2 synthesis on 10 inputs at S=19, or a structural split lemma (2590+2592) formalized like `R_meta_651_1` without importing closed outside modules.
+
+No `lean/PEqualNP/Outside/L_meta_2590.lean`; nothing stashed to `/agent/stash-green/`.
