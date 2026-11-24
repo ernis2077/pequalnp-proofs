@@ -1,0 +1,39 @@
+VERDICT: L-meta-2571
+Branch: cursor/l-meta-2571-49b5
+Disposition: exhausted (no green Lean proof; NO PR per instructions)
+Lease: fb21fab2-53d6-4383-94b2-93919c985192 — beat returned HTTP 410 (expired/unheld); not released (per instruction: do not release L-meta-2732)
+
+## Statement (desk JSON)
+
+∃ Monotone2 circuit C, aux wire index q ≤ 25 + |C.gates|,
+  |C.gates| ≤ 45, C.output < 25 + |C.gates|,
+  eval/wire semantics for punctured order-3 plane incidence on Fin 25:
+  true iff ∃ point i < 12, line j ≥ 12 with residue (i+j+2) % 13 ∈ {0,1,3,9},
+  i ∉ {0,2,8}, and both inputs true;
+  when eval is false, wire q = x 13 ∨ x 15 ∨ x 21.
+
+Parent cut: step 1 of 2 toward L-meta-2215 (sibling L-meta-2573); feeds R_meta_2215_317 as hypothesis `hnine`.
+
+## Work performed
+
+| Item | Result |
+|------|--------|
+| Branch `cursor/l-meta-2571-49b5` from `origin/main` | Done |
+| Lease renew (`tools/pnp.sh beat L-meta-2571`) | HTTP 410 |
+| Incidence enumeration | 36 satisfying (point,line) pairs with i ∉ {0,2,8} |
+| Naive monotone DNF | 36 AND + 35 OR = 71 gates (> 45) |
+| Greedy two-level biclique cover (shared OR-of-points × OR-of-lines terms) | 24 terms → 59 gates (+ aux OR chain), still > 45 |
+| Z3 synthesizer `notes/data/lrat-link/search_l2571.py` | Sampled 36 minterms + 250 false rows; s=45, restricted output/aux wires; no SAT witness (solver timeouts) |
+| Program SHA256 | `3314b7ef983a95d07b6b08b5014007e42ce8f3e1f5d8baae0662044aa33f396c` |
+
+## Why no green path
+
+1. **No witness located** under structured two-level cover heuristics or partial Z3 synthesis (≤45 AND/OR gates, aux wire constraint).
+2. **No checked small-circuit Lean lemma** on main for this punctured 25-wire plane encoding; proving a witness would require a full gate list verification in `L_meta_2571.lean` (Imports: `PEqualNP.Defs` only) once a circuit is found.
+3. **No refutation in Lean**; gate-count obstacles (59–71) are computational evidence, not a completed formal lower bound proof in the pinned imports.
+
+## Outcome
+
+**EXHAUSTED** for this agent pass: archive search program hash above; desk release (when appropriate): `reason=exhausted&program=3314b7ef983a95d07b6b08b5014007e42ce8f3e1f5d8baae0662044aa33f396c`.
+
+No `lean/PEqualNP/Outside/L_meta_2571.lean`; nothing stashed to `/agent/stash-green/`.
