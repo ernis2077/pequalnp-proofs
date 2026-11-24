@@ -107,7 +107,7 @@ lemma lB (L:Submodule ℂ aC) (hL:∀t∈L,aO (1+t)≠0)
  have n:P≤H:=by rintro _ ⟨t,b,rfl⟩;exact⟨s t b,v t b⟩
  have a (u:Module.Dual ℂ aH) (C:u 1=1):Module.finrank ℂ (LinearMap.ker u)=4:=by
   have B:u≠0:=by rintro rfl;simp at C
-  have h:=Module.Dual.finrank_ker_add_one_of_ne_zero B;have d:Module.finrank ℂ aH=5:=by simp[aH]
+  have h:=Module.Dual.finrank_ker_add_one_of_ne_zero B;have d:Module.finrank ℂ aH=7:=by simp[aH]
   omega
  have dimH:Module.finrank ℂ H=8:=by rw[((LinearMap.ker f).prodEquiv (LinearMap.ker g)).finrank_eq,Module.finrank_prod,a f k,a g l]
  change Module.finrank ℂ P≤7;by_contra! A;have q:P=H:=Submodule.eq_of_le_of_finrank_le n (by omega);obtain⟨x,y,E,F,m⟩:=aBr f g k l;have z:(x-1,y-1)∈P:=by rw[q];exact⟨by simp[LinearMap.mem_ker,E,k],by simp[LinearMap.mem_ker,F,l]⟩
@@ -137,12 +137,12 @@ def aZ (L:Submodule ℂ aC) (i:Fin 4):Submodule ℂ aC:=L⊓ ⨅ r:{r:Fin 4//r�
 abbrev u (L:Submodule ℂ aC) (i:Fin 4):=aX (aZ L i)
 abbrev p (L:Submodule ℂ aC) (i j:Fin 4):=Module.finrank ℂ (L.map ((row i).prod (row j)))
 abbrev vI (M:Submodule ℂ aC):=∃a b:Fin 7,a≠b∧∀x∈M,∀i,x (i,a)=x (i,b)
-abbrev vJ:=∀L,aD L→aX L=8→∀i,4≤u L i→False
-abbrev MidCase:=∀L,aD L→aX L=8→∀i,2≤u L i→u L i≤3→False
-abbrev mI:=∀L,aD L→aX L=8→∀i,u L i=1→∃M,aD M∧aX M=7∧vI M
+abbrev vJ:=∀L,aD L→aX L=10→∀i,4≤u L i→False
+abbrev MidCase:=∀L,aD L→aX L=10→∀i,2≤u L i→u L i≤3→False
+abbrev mI:=∀L,aD L→aX L=10→∀i,u L i=1→∃M,aD M∧aX M=7∧vI M
 abbrev eI:=∀M,aD M→aX M=7→vI M→False
-abbrev HighPair:=∀L,aD L→aX L=8→(∀i,u L i=0)→∀i j,i≠j→p L i j=7→False
-abbrev vK:=∀L,aD L→aX L=8→(∀i,u L i=0)→(∀i j,i≠j→p L i j≤6)→False
+abbrev HighPair:=∀L,aD L→aX L=10→(∀i,u L i=0)→∀i j,i≠j→p L i j=7→False
+abbrev vK:=∀L,aD L→aX L=10→(∀i,u L i=0)→(∀i j,i≠j→p L i j≤8)→False
 lemma aAl (L:Submodule ℂ aC) (a:8≤aX L):
   ∃S:Submodule ℂ aC,S≤L∧aX S=8:=by
  obtain⟨f,b⟩:=exists_linearIndependent_of_le_finrank (R:=ℂ) (M:=L) a;have c:LinearIndependent ℂ (fun i=>(L.subtype (f i):aC)):=b.map' L.subtype (Submodule.ker_subtype L);refine⟨Submodule.span ℂ (Set.range fun i=>(L.subtype (f i):aC)),?_,?_⟩
@@ -312,7 +312,7 @@ lemma aG7 (L:Submodule ℂ aC) (hL:aD L) (hu:4≤u L 0):aX L≤7:=by
  have z (v:aH):y v=∑l,v l:=by simp[y,LinearMap.sum_apply]
  have a2:Module.finrank ℂ (LinearMap.ker y)=4:=by
   have:=Module.Dual.finrank_ker_add_one_of_ne_zero (f:=y) fun h=>by have:=LinearMap.congr_fun h 1;simp[z] at this
-  have:Module.finrank ℂ aH=5:=by simp[aH]
+  have:Module.finrank ℂ aH=7:=by simp[aH]
   omega
  let R:=aZ L 0
  have x {t:aC} (o:t∈R) (r:Fin 4) (B:r≠0) (c:Fin 7):t (r,c)=0:=congrFun ((Submodule.mem_iInf _).mp (Submodule.mem_inf.mp o).2 ⟨r,B⟩) c;have X:R.map (row 0)=LinearMap.ker y:=by
@@ -578,7 +578,7 @@ abbrev yZ (a b:Fin 7):=LinearMap.ker (yY a b)
 lemma aGr {a b:Fin 7} (hab:a≠b):
   Module.finrank ℂ (yZ a b)=4:=by
  have c:yY a b≠0:=by intro e;have h:=DFunLike.congr_fun e (Pi.single a 1:aH);simpa[yY,Pi.single_apply,hab.symm] using h
- have e:=Module.Dual.finrank_ker_add_one_of_ne_zero c;have dv:Module.finrank ℂ aH=5:=by simp[aH]
+ have e:=Module.Dual.finrank_ker_add_one_of_ne_zero c;have dv:Module.finrank ℂ aH=7:=by simp[aH]
  change Module.finrank ℂ (yZ a b)+1=_ at e;omega
 lemma qT {L:Submodule ℂ aC} (hL:aD L)
   {a b:Fin 7} (hab:a≠b) (hfix:∀t∈L,∀i,t (i,a)=t (i,b)) (i:Fin 4):
@@ -1473,7 +1473,7 @@ lemma aF4 (ρ:Equiv.Perm (Fin 4)) (L:Submodule ℂ aC) (i:Fin 4):
   u (L.map (re ρ 1)) i=u L (ρ i):=by
  unfold u;rw[aBx,nL]
 lemma pT (h:
-  ∀L,aD L→aX L=8→(∀i,u L i=0)→p L 2 3=7→False):
+  ∀L,aD L→aX L=10→(∀i,u L i=0)→p L 2 3=7→False):
   HighPair:=by
  intro L hL b f i j a e;obtain⟨ρ,c,d⟩:=zD i j a;apply h (L.map (re ρ 1)) (gI ρ 1 hL) (by rw[nL,b])
   (fun k=>(aF4 ρ L k).trans (f (ρ k)))
@@ -1709,7 +1709,7 @@ lemma oI {L:Submodule ℂ aC} {i j:Fin 4} {t:aC}:
   t∈aJ L i j↔t∈L∧row i t=0∧row j t=0:=by
  rw[Submodule.mem_inf,LinearMap.mem_ker];change t∈L∧(row i t,row j t)=(0,0)↔_;rw[Prod.mk.injEq]
 lemma qV {L:Submodule ℂ aC} {i j:Fin 4}
-  (a:aX L=8) (b:p L i j=7):
+  (a:aX L=10) (b:p L i j=7):
   aX (aJ L i j)=1:=by
  let f:=(row i).prod (row j)
  have h:p L i j+aX (aJ L i j)=aX L:=by
@@ -1719,7 +1719,7 @@ lemma qV {L:Submodule ℂ aC} {i j:Fin 4}
   simp
  omega
 lemma oJ {L:Submodule ℂ aC} {i j:Fin 4}
-  (e:aX L=8) (g:p L i j=7):
+  (e:aX L=10) (g:p L i j=7):
   ∃t∈aJ L i j,t≠0∧aJ L i j=Submodule.span ℂ {t}:=by
  have a:Module.finrank ℂ (aJ L i j)=1:=qV e g;have f:aJ L i j≠ ⊥ :=by intro d;rw[d,finrank_bot] at a;omega
  obtain⟨t,c,b⟩:=(Submodule.ne_bot_iff _).mp f;refine⟨t,c,b,(Submodule.eq_of_le_of_finrank_le ?_ ?_).symm⟩
@@ -1731,7 +1731,7 @@ lemma iW {L:Submodule ℂ aC} {t:aC} {i:Fin 4}
  have h:t∈aZ L i:=by simp only[aZ,Submodule.mem_inf,Submodule.mem_iInf,LinearMap.mem_ker];exact⟨a,fun j=>c j.val j.property⟩
  rw[Submodule.finrank_eq_zero.mp b] at h;simpa only[Submodule.mem_bot] using h
 lemma qW {L:Submodule ℂ aC} (hL:aD L)
-  (s:aX L=8) (x:p L 2 3=7) (n:∀i,u L i=0)
+  (s:aX L=10) (x:p L 2 3=7) (n:∀i,u L i=0)
   (w:∀t∈aJ L 2 3,∀i j:F,i≠j→
     aL (row 0 t) (row 1 t) i j=0):
   ∃
@@ -1763,7 +1763,7 @@ end Ac.Ae
 namespace Ac.Ap
 open Aa Ac.Ae
 lemma lE {L:Submodule ℂ aC} (hL:aD L)
-  (g:aX L=8) (f:p L 2 3=7) (k:∀i,u L i=0):
+  (g:aX L=10) (f:p L 2 3=7) (k:∀i,u L i=0):
   ∃
    a b:aH,bD a b 0 0≠0∧bD a b 0 0∈L∧
    aJ L 2 3=Submodule.span ℂ {bD a b 0 0}∧kS a b:=by
@@ -1956,7 +1956,7 @@ def jQ (j:Fin 7):bI→ₗ[ℂ] cI 4 where
  map_smul' c v:=by funext p;simp[aA,←mul_sum];ring
 lemma yK (hL:aD L) {i w}
   (d:w∈U L i) {j:Fin 7} (a:w j=0) (b:∀k≠j,w k≠0):
-  Module.finrank ℂ ((W L i).map (jQ j))≤6:=by
+  Module.finrank ℂ ((W L i).map (jQ j))≤8:=by
  have e:=eS (n:=4) (fun k=>w (j.succAbove k))
   (fun k=>b _ (Fin.succAbove_ne j k)) ((W L i).map (jQ j)) (by
     rintro _ ⟨v,c,rfl⟩;have H:=hO hL d c;rw[Fin.sum_univ_succAbove _ j,a,zero_mul,zero_add] at H;exact H)
@@ -1976,7 +1976,7 @@ lemma gJ (hL:aD L) {i w}
   (b:w∈U L i) {j:Fin 7} (a:w j≠0):
   Function.Injective ((jQ j).domRestrict (W L i)):=by
  apply(injective_iff_map_eq_zero _).2;intro v c;have h:=fI (show jQ j v.val=0 from c);apply Subtype.ext;have z:=tF hL b a (show jF (fun r=>aA v.val r j) (rU j)∈W L i from h▸v.2);rw[h,z];ext;simp[jF]
-lemma lS (hL:aD L) (g:aX L=8)
+lemma lS (hL:aD L) (g:aX L=10)
   {i:Fin 4} (f:u L i=2) {w:aH} (d:w∈U L i) {j:Fin 7}
   (a:w j=0) (c:∀k≠j,w k≠0):
   ∀y∈U L i,y j=0:=by
@@ -2064,7 +2064,7 @@ lemma iY (hL:aD L) {i}
   simp only[G,e,Av.cJ];simp only[h (fun z=>z) d,h (fun z=>z*z) d,h (fun z=>z*z*z) d];dsimp[t];split_ifs<;>ring
  have K (d:ℂ):=H d;simp_rw[g,mul_ite,sum_ite] at K;simp[sum_add_distrib,add_mul,←sum_mul,filter_notMem_eq_sdiff,card_sdiff_of_subset,c] at K;obtain rfl:s=0:=by simpa using(K 0).symm
  apply one_ne_zero (α:=ℂ);linear_combination(K 2-5*K 1+9*K (-1))/(-576)
-lemma rV (hL:aD L) (f:aX L=8)
+lemma rV (hL:aD L) (f:aX L=10)
   {i:Fin 4} (d:u L i=2):∃j:Fin 7,∀w∈U L i,w j=0:=by
  by_contra! c;obtain⟨A,_,e,u,v,m,n⟩:=kT _ ((tE L i).trans d)
   Finset.univ Finset.univ_nonempty (fun j=>by simpa using c j) (by intro x j _ l;obtain⟨y,k,g⟩:=c j;by_contra! h;exact g (lS hL f d x.2 l (by simpa using h) y k))
@@ -2121,7 +2121,7 @@ lemma fJ (hL:aD L) (i:Fin 4) (j:Fin 7):
 lemma cX {n:ℕ} (S:Submodule ℂ bI) (F:bI→ₗ[ℂ] cI n):
   Module.finrank ℂ (S.map F)+Module.finrank ℂ (S⊓LinearMap.ker F:Submodule ℂ bI)=Module.finrank ℂ S:=by
  exact uF F S
-lemma rW (hL:aD L) (K:aX L=8)
+lemma rW (hL:aD L) (K:aX L=10)
   {i:Fin 4} (J:u L i=2) {m j:Fin 7} (g:m≠j)
   (s:∀w∈U L i,w m=0) {y:aH} (l:y∈U L i) (n:y j≠0)
   {w:aH} (t:w∈U L i) (v:w j=0):
@@ -2171,7 +2171,7 @@ def zJ (P:Submodule ℂ aH):Prop:=
  (∃A:Finset (Fin 7),A.card=3∧P=bJ A)∨
  (∃A B:Finset (Fin 7),A.card=2∧B.card=2∧Disjoint A B∧
    P=bJ A⊔bJ B)
-lemma lF (hL:aD L) (r:aX L=8)
+lemma lF (hL:aD L) (r:aX L=10)
   {i:Fin 4} (p:u L i=2):zJ (U L i):=by
  obtain⟨m,J⟩:=rV hL r p;have s:=(tE L i).trans p
  let S:=({m}:Finset (Fin 7))ᶜ
@@ -2198,12 +2198,12 @@ lemma lF (hL:aD L) (r:aX L=8)
   refine Or.inl ⟨A,f,Submodule.eq_of_le_of_finrank_le ?_ ?_⟩
   ·intro w t;refine⟨lR hL t,fun k a=> ?_⟩;have:=z ⟨w,t⟩;simp[A] at a;grind
   ·have:=jR A (card_pos.mp (by omega));omega
-abbrev kV:=∀L:Submodule ℂ aC,aD L→aX L=8→∀i,u L i=2→∀A:Finset (Fin 7),A.card=3→U L i=bJ A→False
-abbrev fD:=∀L:Submodule ℂ aC,aD L→aX L=8→
+abbrev kV:=∀L:Submodule ℂ aC,aD L→aX L=10→∀i,u L i=2→∀A:Finset (Fin 7),A.card=3→U L i=bJ A→False
+abbrev fD:=∀L:Submodule ℂ aC,aD L→aX L=10→
  ∀
   i,u L i=2→∀A B:Finset (Fin 7),A.card=2→B.card=2→Disjoint A B→
   U L i=bJ A⊔bJ B→False
-abbrev lT:=∀L:Submodule ℂ aC,aD L→aX L=8→∀i,u L i=3→False
+abbrev lT:=∀L:Submodule ℂ aC,aD L→aX L=10→∀i,u L i=3→False
 lemma uR (t:kV) (p:fD) (h:lT):
   MidCase:=by
  intro L a b i k j;by_cases f:u L i=2
@@ -2393,20 +2393,20 @@ lemma jU {L:Submodule ℂ aC} (hL:aD L) {i j:Fin 4}
   (g:jT L i j):aY L j≤aY L i:=by
  obtain⟨n,e,_,a,b⟩:=fE f g;have c:aY L i=bM n:=Submodule.eq_of_le_of_finrank_le a (by rw[wC e,cV hL,d]);rwa [c]
 lemma eN {L:Submodule ℂ aC} (hL:aD L)
-  (x:aX L=8) (t:∀l,u L l=0)
-  (v:∀i j,i≠j→p L i j=6→jT L i j)
+  (x:aX L=10) (t:∀l,u L l=0)
+  (v:∀i j,i≠j→p L i j=8→jT L i j)
   {i j k:Fin 4} (a:i≠j) (b:i≠k) (c:j≠k)
   (f:aE L i=3) (m:aE L j=3) (n:aE L k=3):
   aY L i=aY L j:=by
  have d {r s:Fin 4} (o:r≠s) (e:aE L r=3) (q:aE L s=3)
    (h:p L r s=6):aY L r=aY L s:=by
   have g:=jU hL e (by rw[e,q];exact h) (v _ _ o h);exact(Submodule.eq_of_le_of_finrank_le g (by rw[cV hL,cV hL,e,q])).symm
- by_cases h:p L i j=6
+ by_cases h:p L i j=8
  ·exact d a f m h
  ·have y:=bB t a b c;have w:=bB t a.symm c b;rw[tH L j i] at w;have z:=cF L i j;have A:=cF L i k;have B:=cF L j k;exact(d b f n (by omega)).trans (d c m n (by omega)).symm
 lemma xT {L:Submodule ℂ aC} (hL:aD L)
-  (v:aX L=8) (o:∀l,u L l=0)
-  (q:∀i j,i≠j→p L i j=6→jT L i j)
+  (v:aX L=10) (o:∀l,u L l=0)
+  (q:∀i j,i≠j→p L i j=8→jT L i j)
   {a b c:Fin 4} (hab:a≠b) (d:a≠c) (f:b≠c)
   (e:aE L a=3) (g:aE L b=3) (t:aE L c=3):
   ∃n:aH,n≠0∧(∑j,n j)=0∧∀i,aE L i=3→aY L i=bM n:=by
@@ -2904,7 +2904,7 @@ lemma nX {L:Submodule ℂ aC} {k:F}
    (l fun i _=>a0▸r i 0)
   simp at t;omega
 lemma lX {L:Submodule ℂ aC} {k:F}
-  (hL:aD L) (i:aX L=8) (m:p L 2 3=7)
+  (hL:aD L) (i:aX L=10) (m:p L 2 3=7)
   (b:bD (Pi.single k 1) (-(Pi.single k 1)) 0 0∈L):
   ∃S:Submodule ℂ aC,S≤L∧aD S∧aX S=7∧∀t∈S,row 0 t=row 1 t:=by
  have e:=nX hL m b
@@ -2919,7 +2919,7 @@ lemma lX {L:Submodule ℂ aC} {k:F}
   ·exact d▸sub_eq_zero.mp (show f v=0 from o)
   ·obtain⟨j,rfl⟩:=Fin.exists_succAbove_eq d;exact sub_eq_zero.mp (congrFun dt j)
 lemma iT {L:Submodule ℂ aC} (hL:aD L)
-  (v:aX L=8) (m:p L 2 3=7) (H:∀i,u L i=0):
+  (v:aX L=10) (m:p L 2 3=7) (H:∀i,u L i=0):
   (∃S:Submodule ℂ aC,S≤L∧aD S∧aX S=7∧∀t∈S,row 0 t=row 1 t)∨
   (∃a b:aH,bD a b 0 0≠0∧bD a b 0 0∈L∧
     aJ L 2 3=Submodule.span ℂ {bD a b 0 0}∧
@@ -3008,7 +3008,7 @@ lemma iK {L:Submodule ℂ aC} (k:p L 2 3=7)
   aP V=aP L∧
   Module.finrank ℂ (V.map aB)=Module.finrank ℂ (L.map aB)+1∧
   Module.finrank ℂ (V.map aB)+Module.finrank ℂ ((aP V).map aG)=8∧
-  4≤Module.finrank ℂ (V.map aB)∧Module.finrank ℂ (V.map aB)≤6:=by
+  4≤Module.finrank ℂ (V.map aB)∧Module.finrank ℂ (V.map aB)≤8:=by
  intro V;obtain⟨f,-,-,hf⟩:=iU h;have b:aP V=aP L:=le_antisymm (fun Y ⟨j,e⟩=>by obtain⟨v,d,_,g,rfl⟩:=Submodule.mem_sup.mp j;obtain⟨s,rfl⟩:=Submodule.mem_span_singleton.mp g;have c:=hf (v+s•(1:aC)) s ⟨v,d,by ext i;simp[aM];ring⟩;rw[show aB (v+s•(1:aC))=0 from e,map_zero] at c;exact⟨by simpa[←c] using d,e⟩) (inf_le_inf le_sup_left le_rfl);have a:Module.finrank ℂ (V.map aB)=Module.finrank ℂ (L.map aB)+1:=by dsimp only[V];rw[Submodule.map_sup,Submodule.map_span,Set.image_singleton];exact Submodule.finrank_sup_span_singleton h
  have:=rA L;have:=Submodule.finrank_le ((aP L).map aG);have:=Submodule.finrank_le (V.map aB);have:Module.finrank ℂ bE=4:=by simp[bE]
  have:Module.finrank ℂ jH=6:=by simp[jH]
@@ -3132,8 +3132,8 @@ lemma fX {T:Type*} [AddCommGroup T] [Module ℂ T]
   ∃x,Ag.dL (A x) (B x)*ᵥ (1:aH)≠0:=
  Ag.iG (P:= ↥K) A B a b f e d
 set_option maxHeartbeats 800000 in
-lemma fF {L:Submodule ℂ aC} (hL:aD L) (G:aX L=8)
-  (v:∀r,u L r=0) {i j:Fin 4} (b:i≠j) (H:p L i j≤6):
+lemma fF {L:Submodule ℂ aC} (hL:aD L) (G:aX L=10)
+  (v:∀r,u L r=0) {i j:Fin 4} (b:i≠j) (H:p L i j≤8):
   jT L i j:=by
  classical
  obtain⟨s,e,f⟩:=Ae.zD i j b
@@ -3161,13 +3161,13 @@ lemma fF {L:Submodule ℂ aC} (hL:aD L) (G:aX L=8)
  have l:2≤Module.finrank ℂ K:=by have h:=cA L i j;change p L i j+Module.finrank ℂ K=aX L at h;omega
  obtain⟨k,C⟩:=fX (T:=L) (aJ L i j) A B n o m g l;refine⟨Ag.dL (A k) (B k),qL _ _,C,?_⟩;intro t E;rw[←jW];exact a k ⟨t,E⟩
 lemma mR {L:Submodule ℂ aC} (hL:aD L)
-  (f:aX L=8) (h:∀l,u L l=0)
+  (f:aX L=10) (h:∀l,u L l=0)
   {a b c:Fin 4} (hab:a≠b) (d:a≠c) (e:b≠c)
   (k:aE L a=3) (m:aE L b=3) (o:aE L c=3):
   ∃n:aH,n≠0∧(∑j,n j)=0∧∀i,aE L i=3→aY L i=bM n:=
  xT hL f h (fun _ _ g p=>fF hL f h g p.le) hab d e k m o
 lemma pU {L:Submodule ℂ aC} (hL:aD L)
-  (v:aX L=8) (k:∀l,u L l=0)
+  (v:aX L=10) (k:∀l,u L l=0)
   {a b c:Fin 4} (hab:a≠b) (o:a≠c) (r:b≠c)
   (d:aE L a=3) (q:aE L b=3) (w:aE L c=3):
   ∃
@@ -3180,8 +3180,8 @@ lemma pU {L:Submodule ℂ aC} (hL:aD L)
  have s:b≠i:=fun e=>g (e▸q)
  have t:=bB k f hab s.symm;have m:=cF L a b;have B:=cF L a i;have y:p L a i=aE L a+aE L i:=by omega
  exact(jU hL d y (fF hL v k f (by omega))).trans (h a d).le
-lemma zK {L:Submodule ℂ aC} (hL:aD L) (o:aX L=8)
-  (f:∀l,u L l=0) (d:∀i j,i≠j→p L i j≤6)
+lemma zK {L:Submodule ℂ aC} (hL:aD L) (o:aX L=10)
+  (f:∀l,u L l=0) (d:∀i j,i≠j→p L i j≤8)
   {a b:Fin 4} (g:aE L a=4) (r:aE L b=2):False:=by
  have hab:a≠b:=by rintro rfl;omega
  obtain⟨c,e,k⟩:∃c:Fin 4,a≠c∧b≠c:=by clear hL o f d g r L;decide+revert
@@ -3194,15 +3194,15 @@ lemma uS {L:Submodule ℂ aC} (d:∀l,u L l=0)
   {i j k:Fin 4} (a:i≠j) (b:i≠k) (c:j≠k):
   aX L≤aE L i+aE L j+aE L k:=by
  have:=bB d a b c;have:=cF L i j;have:=cF L i k;omega
-lemma fG {L:Submodule ℂ aC} (hL:aD L) (g:aX L=8)
-  (f:∀l,u L l=0) (e:∀i j,i≠j→p L i j≤6) (i:Fin 4):
+lemma fG {L:Submodule ℂ aC} (hL:aD L) (g:aX L=10)
+  (f:∀l,u L l=0) (e:∀i j,i≠j→p L i j≤8) (i:Fin 4):
   2≤aE L i∧aE L i≤4:=by
  obtain⟨j,k,a,b,c⟩:∃j k:Fin 4,j≠i∧j≠k∧i≠k:=by clear hL g f e L;decide+revert
- have:=bB f a b c;have:=e j k b;have:=cF L j i;have m:=(aY L i).finrank_le;rw[cV hL] at m;have d:Module.finrank ℂ aH=5:=by simp[aH]
+ have:=bB f a b c;have:=e j k b;have:=cF L j i;have m:=(aY L i).finrank_le;rw[cV hL] at m;have d:Module.finrank ℂ aH=7:=by simp[aH]
  omega
 lemma zL (i:Fin 4):∃a b c:Fin 4,a≠b∧a≠c∧b≠c∧a≠i∧b≠i∧c≠i:=by decide+revert
-lemma wH {L:Submodule ℂ aC} (hL:aD L) (q:aX L=8)
-  (o:∀l,u L l=0) (k:∀i j,i≠j→p L i j≤6):
+lemma wH {L:Submodule ℂ aC} (hL:aD L) (q:aX L=10)
+  (o:∀l,u L l=0) (k:∀i j,i≠j→p L i j≤8):
   (∃i j:Fin 4,i≠j∧aE L i=4∧aE L j=4)∨
   (∃a b c:Fin 4,a≠b∧a≠c∧b≠c∧aE L a=3∧
     aE L b=3∧aE L c=3):=by
@@ -3347,7 +3347,7 @@ lemma aE4 (L:Submodule ℂ aC):W L=Af.W (C L) 0:=by
  have a:(Af.bH 0).comp (Ad.re rot 1)=aU:=by ext t ⟨r,j⟩;fin_cases r<;>rfl
  rw[W,Af.W,sup_comm,C,←Submodule.map_comp,a]
 lemma aGu {L:Submodule ℂ aC} {v:aH} (h:bF 0 v∈L):v∈Af.U (C L) 0:=by refine Af.uE.mpr ⟨_,h,?_⟩;funext ⟨r,c⟩;fin_cases r<;>rfl
-lemma aGv {L:Submodule ℂ aC} (hL:aD L) (a:aX L=8) (b:u L 3=1):
+lemma aGv {L:Submodule ℂ aC} (hL:aD L) (a:aX L=10) (b:u L 3=1):
   Module.finrank ℂ (W L)=8:=by
  rw[aE4];have e:=Af.jP (Ad.gI rot 1 hL) 0;rw[Ae.aF4,Ad.nL,a,show rot 0=3 from rfl,b] at e;change Module.finrank ℂ (Af.W (C L) 0)+1=8+1 at e;exact Nat.add_right_cancel e
 lemma aE5 {L:Submodule ℂ aC} {X:bI} (f:X∈W L):
@@ -3371,7 +3371,7 @@ lemma aHi (v:aH):Av.eJ 3 v=bF 0 v:=by funext ⟨r,c⟩;fin_cases r<;>rfl
 lemma aF6 {L:Submodule ℂ aC} (hL:aD L) (c:u L 3=1):
   ∃v:aH,v≠0∧(∑j,v j)=0∧bF 0 v∈L:=by
  obtain⟨v,a,b⟩:=Submodule.exists_mem_ne_zero_of_ne_bot (p:=Af.U L 3) (by intro h;have e:=Af.tE L 3;rw[h,finrank_bot,c] at e;omega);exact⟨v,b,Af.lR hL a,aHi v▸Af.uE.mp a⟩
-lemma wJ {L:Submodule ℂ aC} (hL:aD L) (o:aX L=8)
+lemma wJ {L:Submodule ℂ aC} (hL:aD L) (o:aX L=10)
   (i:Fin 4) {a b:Fin 7} (hab:a≠b)
   (k:∀t∈L,∀r,r≠i→t (r,a)=t (r,b)):
   ∃M,aD M∧aX M=7∧vI M:=by
@@ -3400,7 +3400,7 @@ lemma blk {L:Submodule ℂ aC} (hL:aD L) {v:aH} (b:bF 0 v∈L)
 lemma aF7 {A:Finset (Fin 7)} {x:bI} (h:Af.aK A x=0) {k:Fin 7}
   (a:k∈A) (r:Fin 3):x (r,k)=(∑j,x (r,j))/2:=by
  have e:=congrFun h (A.equivFin ⟨k,a⟩,r);simp only[Af.aK,LinearMap.coe_mk,AddHom.coe_mk,Equiv.symm_apply_apply] at e;exact sub_eq_zero.mp e
-lemma wK {L:Submodule ℂ aC} (hL:aD L) (b:aX L=8)
+lemma wK {L:Submodule ℂ aC} (hL:aD L) (b:aX L=10)
   (f:u L 3=1) {v:aH} (g:bF 0 v∈L):∃j,v j=0:=by
  by_contra! d;have w:=blk hL g univ (by simp[d]);have e:=Af.cX (W L) (Af.aK univ);have z:(W L⊓LinearMap.ker (Af.aK univ):Submodule ℂ bI)= ⊥ :=by
   rw[eq_bot_iff];intro x i;have a (r:Fin 3) (j:Fin 7):=aF7 i.2 (mem_univ j) r;have s (r:Fin 3):(∑c,x (r,c))=0:=by
@@ -3408,7 +3408,7 @@ lemma wK {L:Submodule ℂ aC} (hL:aD L) (b:aX L=8)
    rw[a r 0,a r 1,a r 2,a r 3,a r 4] at h;linear_combination-2*h/3
   exact funext fun q=>by rw[a q.1 q.2,s,zero_div];rfl
  rw[z,finrank_bot,aGv hL b f] at e;have c:(univ:Finset (Fin 7)).card=7:=rfl;omega
-lemma wL {L:Submodule ℂ aC} (hL:aD L) (f:aX L=8)
+lemma wL {L:Submodule ℂ aC} (hL:aD L) (f:aX L=10)
   (g:u L 3=1) {v:aH} (c:bF 0 v∈L) {j:Fin 7}
   (a:v j=0) (b:∀k≠j,v k≠0):False:=by
  have d:=Af.yK hL (Af.uE.mpr (aHi v▸c)) a b;have k:=Af.fJ hL 3 j;have e:=Af.cX (Af.W L 3) (Af.jQ j);have w:=Af.jP hL 3;omega
@@ -3421,7 +3421,7 @@ abbrev S3 (L:Submodule ℂ aC):=(K3 L).map aE7
 lemma aB5 {Y:bI} (b:Af.aK A3 Y=0):rad (aE7 Y)=Y:=by
  funext ⟨r,c⟩;have a:=aF7 b (k:=0) (by decide) r;have e1:=aF7 b (k:=1) (by decide) r;have e2:=aF7 b (k:=2) (by decide) r;have d: -Y (r,0)-Y (r,3)=Y (r,4):=by rw[fH] at a e1 e2;linear_combination e1+e2
  fin_cases c<;>first | rfl | exact a.trans e1.symm | exact a.trans e2.symm | exact d
-lemma aHj {L:Submodule ℂ aC} (hL:aD L) (g:aX L=8)
+lemma aHj {L:Submodule ℂ aC} (hL:aD L) (g:aX L=10)
   (i:u L 3=1) {v:aH} (j:bF 0 v∈L) (b:∀k,v k≠0↔k∈A3):
   4≤Module.finrank ℂ (S3 L):=by
  have w:=blk hL j A3 b;have a:_+Module.finrank ℂ (K3 L)=_:=Af.cX (W L) (Af.aK A3);rw[aGv hL g i] at a;have d:Module.finrank ℂ (K3 L)≤Module.finrank ℂ (S3 L):=
@@ -3506,7 +3506,7 @@ lemma aB7 {L:Submodule ℂ aC} (hL:aD L) {f:Fin 3→ℂ}
  rcases mul_eq_zero.mp prod with s|u
  ·exact sD hL Z.2.1 b (i:=i) (fun c=>(mul_eq_zero.mp ((Zi c).trans s)).resolve_left n) (m j Zj (by linear_combination o-s)) Zk
  ·exact sD hL Z.2.1 a (i:=j) (fun c=>(mul_eq_zero.mp ((Zj c).trans u)).resolve_left n) (m i Zi (by linear_combination o-u)) Zk
-lemma tN {L:Submodule ℂ aC} (hL:aD L) (i:aX L=8)
+lemma tN {L:Submodule ℂ aC} (hL:aD L) (i:aX L=10)
   (l:u L 3=1) {v:aH} (a:bF 0 v∈L) (d:∑j,v j=0)
   (m:v 0≠0) (n:v 1≠0) (o:v 2≠0) (g:v 3=0) (h:v 4=0):
   ∀X∈W L,∀r:Fin 3,(∑j,v j*X (r,j))=0:=by
@@ -3566,7 +3566,7 @@ lemma aB8 (v:aH) (d:∑j,v j=0) (g:v 1≠0) (a:v 3=0) (b:v 4=0)
 end Ac.Ah.Aw
 namespace Ac.Ah
 open Aa
-lemma uT {L:Submodule ℂ aC} (hL:aD L) (q:aX L=8)
+lemma uT {L:Submodule ℂ aC} (hL:aD L) (q:aX L=10)
   (s:u L 3=1) {v:aH} (x:bF 0 v∈L) (l:∑j,v j=0)
   (o:v 0≠0) (k:v 1≠0) (p:v 2≠0) (d:v 3=0) (g:v 4=0)
   (n:∀X∈W L,∀r:Fin 3,(∑j,v j*X (r,j))=0):False:=by
@@ -3582,7 +3582,7 @@ lemma uT {L:Submodule ℂ aC} (hL:aD L) (q:aX L=8)
 end Ac.Ah
 namespace Ac.Ah
 open Aa Finset
-abbrev oT  :Prop:=∀{L:Submodule ℂ aC}  ,aD L→aX L=8→
+abbrev oT  :Prop:=∀{L:Submodule ℂ aC}  ,aD L→aX L=10→
  u L 3=1→bF 0 (Pi.single 0 1-Pi.single 1 1)∈L→
  ∀t∈L,∀i:Fin 3,aU t (i,0)=aU t (i,1)
 open Ad
@@ -3609,7 +3609,7 @@ lemma aFa (L:Submodule ℂ aC) {v:aH} (a:bF 0 v∈L)
   (σ:Equiv.Perm (Fin 7)):bF 0 (v∘σ)∈L.map (re 1 σ):=by
  refine⟨_,a,?_⟩;funext ⟨i,j⟩;fin_cases i<;>rfl
 lemma aF9 (gT:oT) {L:Submodule ℂ aC} (hL:aD L)
-  (d:aX L=8) (n:u L 3=1) {v:aH} (l:bF 0 v∈L) (f:∑j,v j=0)
+  (d:aX L=10) (n:u L 3=1) {v:aH} (l:bF 0 v∈L) (f:∑j,v j=0)
   (g:v 0≠0) (a:v 2=0) (b:v 3=0) (c:v 4=0):
   ∃M,aD M∧aX M=7∧vI M:=by
  have k:v 1= -v 0:=by rw[fH,a,b,c] at f;linear_combination f
@@ -3627,7 +3627,7 @@ lemma aFb (dif:oT):mI:=by
  have r:u K 3=1:=(aGl ρ 1 L 3).trans (by simpa[ρ] using A);have q:aD K:=gI ρ 1 hL;obtain⟨v,o,z,y⟩:=aF6 q r;obtain⟨n,E,σ,hσ⟩:=aDq v
  let M:=K.map (re 1 σ)
  let w:=v∘σ
- have c:aD M:=gI _ _ q;have d:aX M=8:=(nL _ _ _).trans ((nL _ _ _).trans t);have g:u M 3=1:=(aGl _ _ _ _).trans r;have f:bF 0 w∈M:=aFa K y σ;have l:∑j,w j=0:=(Equiv.sum_comp σ v).trans z;have a (j:Fin 7) (h:j.val<n):w j≠0:=(hσ j).mpr h;have b (j:Fin 7) (h:¬j.val<n):w j=0:=not_not.mp (fun o=>h ((hσ j).mp o));have C:2≤n:=by
+ have c:aD M:=gI _ _ q;have d:aX M=10:=(nL _ _ _).trans ((nL _ _ _).trans t);have g:u M 3=1:=(aGl _ _ _ _).trans r;have f:bF 0 w∈M:=aFa K y σ;have l:∑j,w j=0:=(Equiv.sum_comp σ v).trans z;have a (j:Fin 7) (h:j.val<n):w j≠0:=(hσ j).mpr h;have b (j:Fin 7) (h:¬j.val<n):w j=0:=not_not.mp (fun o=>h ((hσ j).mp o));have C:2≤n:=by
   by_contra! B;have h (j:Fin 7) (m:j≠0):w j=0:=b j (by have:=Fin.pos_iff_ne_zero.mpr m;omega);have s:w 0=0:=by simpa[fH,h 1 (by decide),h 2 (by decide),h 3 (by decide),h 4 (by decide)] using l
   exact o (funext (fun j=>by
                                 by_cases p:σ.symm j=0
@@ -3822,7 +3822,7 @@ lemma aDr (hL:aD L) (hW:finrank ℂ (W L)=8) (O:bF 0 dv∈L)
 end Ac.Ah.Au
 namespace Ac.Ah
 open Aa Au Finset LinearMap Module
-lemma xU {L:Submodule ℂ aC} (hL:aD L) (z:aX L=8)
+lemma xU {L:Submodule ℂ aC} (hL:aD L) (z:aX L=10)
   (F:u L 3=1) (n:bF 0 (Pi.single 0 1-Pi.single 1 1)∈L):
   ∀t∈L,∀i:Fin 3,aU t (i,0)=aU t (i,1):=by
  have o:=aGv hL z F
@@ -3878,7 +3878,7 @@ lemma jZ {L:Submodule ℂ aC} {i:Fin 4} {A:Finset (Fin 7)}
  have z (k:Fin 7) (e:k∈A):x (r,k)=(∑l,x (r,l))/2:=by have b:aK A x=0:=f.2;have c:=congrFun b (A.equivFin ⟨k,e⟩,r);exact sub_eq_zero.mp (by simpa[aK,aA] using c)
  have a:=Equiv.sum_comp σ (fun k=>x (r,k));rw[Fin.sum_univ_seven] at a;rw[z _ ((hσ _).mpr (.inl rfl)),z _ ((hσ _).mpr (.inr (.inl rfl))),z _ ((hσ _).mpr (.inr (.inr rfl)))] at a;change x (r,j)= -(x (r,σ 3)+x (r,σ 4))
  linear_combination z j d+a
-lemma aGb {L:Submodule ℂ aC} (hL:aD L) (n:aX L=8)
+lemma aGb {L:Submodule ℂ aC} (hL:aD L) (n:aX L=10)
   {i:Fin 4} (v:u L i=2) {A:Finset (Fin 7)} (o:A.card=3)
   (f:U L i=bJ A) {σ:Equiv.Perm (Fin 7)}
   (hσ:∀k,k∈A↔k=σ 0∨k=σ 1∨k=σ 2):
@@ -4135,7 +4135,7 @@ lemma mS (K:Submodule ℂ (Fin 3→Fin 2→ℂ))
 end Ac.Af
 namespace Ac.Af
 open Aa Finset
-lemma oV {L:Submodule ℂ aC} (hL:aD L) (P:aX L=8)
+lemma oV {L:Submodule ℂ aC} (hL:aD L) (P:aX L=10)
   {i:Fin 4} (X:u L i=2) {A:Finset (Fin 7)} (C:A.card=3)
   (v:U L i=bJ A):∃h:Fin 3→ℂ,h≠0∧(∑r,h r)=0∧
   ∀x∈W L i,∀j∈A,∀k∈A,∃t:ℂ,(fun r:Fin 3=>x (r,j)-x (r,k))=t•h:=by
@@ -4187,7 +4187,7 @@ lemma aFh (gF:eI) {L:Submodule ℂ aC} (e:aD L)
  have le:S≤L:=Submodule.span_le.mpr (by rintro _ ⟨s,rfl⟩;exact(v s).property);have k:aX S=7:=by dsimp only[S,aX];rw[finrank_span_eq_card j];simp
  obtain⟨a,b,f,g⟩:=d;exact gF S (fun x c=>e x (le c)) k ⟨a,b,f,fun x c=>g x (le c)⟩
 lemma wN (gF:eI) {L:Submodule ℂ aC} (h:aD L)
-  (l:aX L=8) {i:Fin 4} {j k:Fin 7} (g:j≠k)
+  (l:aX L=10) {i:Fin 4} {j k:Fin 7} (g:j≠k)
   (m:∀x∈W L i,∀r:Fin 3,x (r,j)=x (r,k)):False:=by
  let f:=LinearMap.proj (R:=ℂ) (φ:=fun _:Fin 4×Fin 7=>ℂ) (i,j)-LinearMap.proj (i,k)
  let M:=L⊓LinearMap.ker f
@@ -4262,7 +4262,7 @@ lemma aCd (P:Submodule ℂ bI)
   (c:∀x∈P,∀j:Fin 7,j=0∨j=1→∀r,
     x (r,j)-x (r,2)=x (0,j)-x (0,2))
   (lQ:∃y∈P,y (0,0)≠y (0,1))
-  (l:∀x∈P,G x 0=G x 1):Module.finrank ℂ P≤6:=by
+  (l:∀x∈P,G x 0=G x 1):Module.finrank ℂ P≤8:=by
  have e (x:bI) (a:x∈P) (f:x (0,0)≠x (0,1)):sG x=0:=by have H:=aA5 x (x (0,0)-x (0,1)) (fun r=>by linear_combination c x a 0 (Or.inl rfl) r-c x a 1 (Or.inr rfl) r);rw[l x a,sub_self,mul_zero] at H;exact(mul_eq_zero.mp H.symm).resolve_left (sub_ne_zero.mpr f)
  have n (x:bI) (a:x∈P):sG x=0:=by
   by_cases h:x (0,0)=x (0,1)
@@ -4299,7 +4299,7 @@ end Ac.Af
 namespace Ac.Af
 open Aa Finset
 lemma rF (gF:eI) {L:Submodule ℂ aC}
-  (l:aD L) (v:aX L=8) {i:Fin 4} (Q:u L i=2)
+  (l:aD L) (v:aX L=10) {i:Fin 4} (Q:u L i=2)
   {A:Finset (Fin 7)} (G:A.card=3) (w:U L i=bJ A)
   {h:Fin 3→ℂ} (N:h≠0) (K:∑r,h r=0)
   (g:∀x∈W L i,∀j∈A,∀k∈A,∃t:ℂ,
@@ -4357,12 +4357,12 @@ def bY (a b:Fin 7):aH:=Pi.single a 1-Pi.single b 1
 lemma uJ (a b:Fin 7) (f:aH):
   ∑j,bY a b j*f j=f a-f b:=by
  simp[bY,sub_mul,sum_sub_distrib,Pi.single_apply,ite_mul]
-abbrev oW (L:Submodule ℂ aC):=aD L∧aX L=8∧u L 0=2∧bY 0 1∈U L 0∧bY 2 3∈U L 0
+abbrev oW (L:Submodule ℂ aC):=aD L∧aX L=10∧u L 0=2∧bY 0 1∈U L 0∧bY 2 3∈U L 0
 def bP:Equiv.Perm (Fin 7):=Equiv.swap 0 2*Equiv.swap 1 3
 def fA:Equiv.Perm (Fin 4):=Equiv.swap 1 2
 def gA:Equiv.Perm (Fin 7):=Equiv.swap 0 1*Equiv.swap 2 3
 abbrev oX (L:Submodule ℂ aC):=L.map (Ad.re 1 bP)
-lemma aA6 {L:Submodule ℂ aC} (k:aD L) (n:aX L=8)
+lemma aA6 {L:Submodule ℂ aC} (k:aD L) (n:aX L=10)
   (ρ:Equiv.Perm (Fin 4)) (σ:Equiv.Perm (Fin 7)) (m:u L (ρ 0)=2)
   (d:bY (σ 0) (σ 1)∈U L (ρ 0)) (f:bY (σ 2) (σ 3)∈U L (ρ 0)):
   oW (L.map (Ad.re ρ σ)):=by
@@ -4553,7 +4553,7 @@ def orb (p:Fin 4×Fin 7):Fin 11:=
    Fin 4→Fin 7→Fin 11) p.1 p.2
 lemma aFi (p q:Fin 4×Fin 7) (h:orb q=orb p):q=p∨q=(fA p.1,gA p.2):=by revert p q h;decide
 lemma sI:Function.Surjective orb:=by decide
-lemma lI {L:Submodule ℂ aC} (hL:aD L) (U:aX L=8)
+lemma lI {L:Submodule ℂ aC} (hL:aD L) (U:aX L=10)
   (hfix:∀x∈L,∀r:Fin 4,r≠0→∀c:Fin 7,
     x (fA r,gA c)=x (r,c)):False:=by
  let a:aC→ₗ[ℂ] (ℂ× ℂ):=
@@ -4603,7 +4603,7 @@ lemma lI {L:Submodule ℂ aC} (hL:aD L) (U:aX L=8)
   have z:lift u=0:=by rw[←Ad.rQ (lift u) (o _ g.1),y];funext p;simp[Ad.bQ,Ad.gR,Ad.gC,Ad.aS,cW]
   exact f (z.trans (map_zero lift).symm)
  have w:=Ah.Au.aGa T S F;rw[m,finrank_bot,Fintype.card_fin] at w;omega
-lemma uU {L:Submodule ℂ aC} (hL:aD L) (d:aX L=8)
+lemma uU {L:Submodule ℂ aC} (hL:aD L) (d:aX L=10)
   (hfix:∀(x:W L 0) (r:Fin 3) (c:Fin 7),
     aA x.val (Equiv.swap 0 1 r) (gA c)=aA x.val r c):False:=by
  refine lI hL d fun x f r e c=> ?_
@@ -4750,8 +4750,8 @@ abbrev wR (L:Submodule ℂ aC) (i j:Fin 4) (a b:aH):Prop:=
   t∈L,∃s:Equiv.Perm (Fin 4),s 2=i∧s 3=j∧
   row i t=0∧row j t=0∧a=row (s 0) t∧b=row (s 1) t
 set_option maxHeartbeats 800000 in
-lemma sK {L:Submodule ℂ aC} (hL:aD L) (J:aX L=8)
-  (x:∀r,u L r=0) {i j:Fin 4} (g:i≠j) (N:p L i j≤6):
+lemma sK {L:Submodule ℂ aC} (hL:aD L) (J:aX L=10)
+  (x:∀r,u L r=0) {i j:Fin 4} (g:i≠j) (N:p L i j≤8):
   ∃
    a b:aH,wR L i j a b∧(∑c,a c)+(∑c,b c)=0∧
    Ag.dQ a b=0∧(Ag.dL a b).IsSymm∧
@@ -4815,22 +4815,22 @@ abbrev tS (L:Submodule ℂ aC) (i j:Fin 4) (n:aH):Prop:=
   Ag.dQ a b=0∧(Ag.dL a b).IsSymm∧
   (∀c,Ag.dL a b c c=0)∧Ag.dL a b*ᵥ (1:aH)≠0∧
   ∀x∈bM n,∀y∈bM n,x ⬝ᵥ Ag.dL a b*ᵥ y=0
-lemma rH {L:Submodule ℂ aC} (hL:aD L) (m:aX L=8)
-  (z:∀r,u L r=0) {i j:Fin 4} {n:aH} (e:i≠j) (f:p L i j=6)
+lemma rH {L:Submodule ℂ aC} (hL:aD L) (m:aX L=10)
+  (z:∀r,u L r=0) {i j:Fin 4} {n:aH} (e:i≠j) (f:p L i j=8)
   (q:aE L i=3) (s:aE L j=3) (c:aY L i=bM n)
   (d:aY L j=bM n):tS L i j n:=by
  obtain⟨a,b,A,x,w,l,k,v,h⟩:=sK hL m z e f.le;refine⟨a,b,A,x,w,l,k,v,?_⟩
  let F:=Matrix.toLinearMap₂' ℂ (S₁:=ℂ) (S₂:=ℂ) (Ag.dL a b)
  have g:p L i j=aE L i+aE L j:=by rw[f,q,s]
  have o:=nU g F (fun t y=>by simpa only[F,Matrix.toLinearMap₂'_apply'] using h t y);simpa only[F,Matrix.toLinearMap₂'_apply',c,d] using o
-lemma sL {L:Submodule ℂ aC} (k:aX L=8) (i:∀r,u L r=0)
+lemma sL {L:Submodule ℂ aC} (k:aX L=10) (i:∀r,u L r=0)
   {a b c:Fin 4} (hab:a≠b) (d:a≠c) (e:b≠c)
   (j:aE L a=3) (f:aE L b=3) (g:aE L c=3):
   ∃r,a≠r∧aE L r=3∧p L a r=6:=by
  have m:=bB i hab d e;have l:=cF L a b;have n:=cF L a c;by_cases h:p L a b=6
  ·exact⟨b,hab,f,h⟩
  exact⟨c,d,g,by omega⟩
-lemma oZ {L:Submodule ℂ aC} (hL:aD L) (j:aX L=8)
+lemma oZ {L:Submodule ℂ aC} (hL:aD L) (j:aX L=10)
   (m:∀r,u L r=0) {a b c:Fin 4} {n:aH} (hab:a≠b) (g:a≠c)
   (h:b≠c) (e:aE L a=3) (o:aE L b=3) (q:aE L c=3)
   (f:∀i,aE L i=3→aY L i=bM n):
@@ -5004,7 +5004,7 @@ lemma lK {L:Submodule ℂ aC} {i j:Fin 4} {n:aH}
   exact q (by rw[s,Matrix.zero_mulVec])
  by_contra! d;have r:=Ay.sM n m g d.1 d.2 e;obtain⟨p,e⟩:=e;exact A8.uV m r g e t y o k q
   (fun x f=>h x f 1 (by change n ⬝ᵥ (1:aH)=0;simpa only[dotProduct_one] using g))
-lemma oA {L:Submodule ℂ aC} (hL:aD L) (k:aX L=8)
+lemma oA {L:Submodule ℂ aC} (hL:aD L) (k:aX L=10)
   (o:∀r,u L r=0) {a b c:Fin 4} {n:aH}
   (l:n≠0) (m:(∑i,n i)=0)
   (hab:a≠b) (d:a≠c) (e:b≠c)
@@ -5012,8 +5012,8 @@ lemma oA {L:Submodule ℂ aC} (hL:aD L) (k:aX L=8)
   (f:∀i,aE L i=3→aY L i=bM n):
   (∑i,n i*n i)≠0∨At.e3 n≠0:=by
  obtain⟨_,_,_,_,p⟩:=oZ hL k o hab d e g h j f;exact lK l m p
-lemma tT {L:Submodule ℂ aC} (hL:aD L) (f:aX L=8)
-  (g:∀l,u L l=0) (h:∀i j,i≠j→p L i j≤6)
+lemma tT {L:Submodule ℂ aC} (hL:aD L) (f:aX L=10)
+  (g:∀l,u L l=0) (h:∀i j,i≠j→p L i j≤8)
   (v:¬ ∃i j:Fin 4,i≠j∧aE L i=4∧aE L j=4):
   ∃
    n:aH,n≠0∧(∑j,n j)=0∧
@@ -5114,8 +5114,8 @@ lemma aDu {L:Submodule ℂ aC} (hL:aD L) {n:aH} (f:n≠0)
   ·exact aCg d f e c (l.resolve_left (not_ne_iff.mpr c)) b
   ·exact xW d f e c b h
  exact(nL ρ 1 L).symm.le.trans a
-lemma tU {L:Submodule ℂ aC} (hL:aD L) (d:aX L=8)
-  (b:∀i,u L i=0) (a:∀i j,i≠j→p L i j≤6):
+lemma tU {L:Submodule ℂ aC} (hL:aD L) (d:aX L=10)
+  (b:∀i,u L i=0) (a:∀i j,i≠j→p L i j≤8):
   ∃i j:Fin 4,i≠j∧aE L i=4∧aE L j=4:=by
  by_contra h;obtain⟨n,g,o,_,s,q⟩:=tT hL d b a h;have e:∃r:Fin 4,∀i,i≠r→aE L i≤3:=by
   by_cases m:∃r,aE L r=4
@@ -5357,13 +5357,13 @@ abbrev kD:=Fin 4→E→ₗ[ℂ] aH
 def sN (L:Submodule ℂ aC):Submodule ℂ aC:=(bS L 0⊔bS L 1).map L.subtype
 def cM (f:kD) (z:lL):aC:=fun p=>f p.1 (z p.1) p.2
 lemma aDc (L:Submodule ℂ aC):sN L≤L:=by rintro _ ⟨x,_,rfl⟩;exact x.property
-lemma mV {L:Submodule ℂ aC} (m:aX L=8) (e:∀i,u L i=0)
-  (d:∀i j,i≠j→p L i j≤6) {i:Fin 4} (o:aE L i=4):
+lemma mV {L:Submodule ℂ aC} (m:aX L=10) (e:∀i,u L i=0)
+  (d:∀i j,i≠j→p L i j≤8) {i:Fin 4} (o:aE L i=4):
   Module.finrank ℂ (bS L i)=4∧∀j,i≠j→Module.finrank ℂ (aJ L i j)=2:=by
  refine⟨by have h:=lU L i;omega,?_⟩;intro j a;obtain⟨k,c,b⟩:∃k:Fin 4,i≠k∧j≠k:=by clear* -i j;decide+revert
  have f:=bB e a c b;have g:=d i k c;have l:=d i j a;have n:=cA L i j;omega
-lemma uW {L:Submodule ℂ aC} (d:aX L=8) (f:∀i,u L i=0)
-  (e:∀i j,i≠j→p L i j≤6)
+lemma uW {L:Submodule ℂ aC} (d:aX L=10) (f:∀i,u L i=0)
+  (e:∀i j,i≠j→p L i j≤8)
   (g:aE L 0=4) (h:aE L 1=4):
   Module.finrank ℂ (bS L 0)=4∧
   Module.finrank ℂ (bS L 1)=4∧
@@ -5401,8 +5401,8 @@ lemma aGq {A B:Type*} [AddCommGroup A] [Module ℂ A] [AddCommGroup B] [Module �
 lemma aDw (L:Submodule ℂ aC) (i j r:Fin 4):
   LinearMap.range (bX L i j r)=LinearMap.range (bX L j i r):=by
  ext x;constructor<;>rintro⟨y,rfl⟩<;>exact⟨⟨y.val,y.property.2,y.property.1⟩,rfl⟩
-lemma zW {L:Submodule ℂ aC} (m:aX L=8) (f:∀i,u L i=0)
-  (o:∀i j,i≠j→p L i j≤6) (t:aE L 0=4) (v:aE L 1=4):
+lemma zW {L:Submodule ℂ aC} (m:aX L=10) (f:∀i,u L i=0)
+  (o:∀i j,i≠j→p L i j≤8) (t:aE L 0=4) (v:aE L 1=4):
   ∃
    (a:E≃ₗ[ℂ] aJ L 1 2) (b:E≃ₗ[ℂ] aJ L 0 2)
    (c:E≃ₗ[ℂ] aJ L 0 1),
@@ -5421,8 +5421,8 @@ lemma zW {L:Submodule ℂ aC} (m:aX L=8) (f:∀i,u L i=0)
   (d 0 2 (by decide) (by decide) (by decide))
   ((g 1 (by decide) (by decide)).trans (g 2 (by decide) (by decide)).symm)
  exact⟨c.trans a,c.trans b,c,fun x=>w (c x),fun x=>y (c x)⟩
-lemma aBa {L:Submodule ℂ aC} (t:aX L=8) (d:∀i,u L i=0)
-  (w:∀i j,i≠j→p L i j≤6) (l:aE L 0=4) (m:aE L 1=4):
+lemma aBa {L:Submodule ℂ aC} (t:aX L=10) (d:∀i,u L i=0)
+  (w:∀i j,i≠j→p L i j≤8) (l:aE L 0=4) (m:aE L 1=4):
   ∃
    f:kD,(∀i,Function.Injective (f i))∧
    (∀z:lL,∑i,z i=0→cM f z∈sN L)∧
@@ -5468,8 +5468,8 @@ lemma aCh {C:Submodule ℂ aC} (d:aX C=6) (f:kD)
  have l:LinearMap.range F=C:=Submodule.eq_of_le_of_finrank_le c (by rw[LinearMap.finrank_range_of_inj k,b];exact d.le);constructor
  ·intro j;rw[←l] at j;obtain⟨w,rfl⟩:=j;exact⟨_,e w,m w⟩
  ·rintro⟨z,r,rfl⟩;exact g z r
-lemma lG {L:Submodule ℂ aC} (c:aX L=8) (g:∀i,u L i=0)
-  (e:∀i j,i≠j→p L i j≤6) (a:aE L 0=4) (b:aE L 1=4):
+lemma lG {L:Submodule ℂ aC} (c:aX L=10) (g:∀i,u L i=0)
+  (e:∀i j,i≠j→p L i j≤8) (a:aE L 0=4) (b:aE L 1=4):
   ∃
    f:kD,(∀i,Function.Injective (f i))∧
    (∀x:aC,x∈sN L↔∃z:lL,∑i,z i=0∧x=cM f z)∧
@@ -5516,8 +5516,8 @@ lemma nQ {L:Submodule ℂ aC} (hL:aD L) (f:kD)
  have c (z:lL) (j:∑i,z i=0):cM f z∈L:=aDc L ((g _).mpr ⟨z,j,rfl⟩);apply wW;intro v;rcases h with⟨t,rfl⟩|⟨t,rfl⟩
  ·rw[aCj];exact A0.tX hL f c e v t a b
  ·exact A0.tW hL f c d v t a b
-lemma aBb {L:Submodule ℂ aC} (hL:aD L) (m:aX L=8)
-  (o:∀i,u L i=0) (n:∀i j,i≠j→p L i j≤6)
+lemma aBb {L:Submodule ℂ aC} (hL:aD L) (m:aX L=10)
+  (o:∀i,u L i=0) (n:∀i j,i≠j→p L i j≤8)
   (c:aE L 0=4) (d:aE L 1=4):
   ∃
    f:kD,(∀i,Function.Injective (f i))∧
@@ -5530,13 +5530,13 @@ lemma aBb {L:Submodule ℂ aC} (hL:aD L) (m:aX L=8)
     x∈LinearMap.range (f 0)⊔LinearMap.range (f 1)→
     Ag.dL a b*ᵥ x=0:=by
  obtain⟨f,g,e,k,l⟩:=lG m o n c d;refine⟨f,g,aCi g,e,k,l,?_⟩;rintro _ _ _ ⟨a,rfl⟩ ⟨b,rfl⟩ h;obtain⟨x,q,y,r,rfl⟩:=Submodule.mem_sup.mp h;rw[Matrix.mulVec_add,nQ hL f e c d a b x (Or.inl q),nQ hL f e c d a b y (Or.inr r),add_zero]
-lemma wX {L:Submodule ℂ aC} (hL:aD L) (f:aX L=8)
-  (o:∀i,u L i=0) (n:∀i j,i≠j→p L i j≤6)
+lemma wX {L:Submodule ℂ aC} (hL:aD L) (f:aX L=10)
+  (o:∀i,u L i=0) (n:∀i j,i≠j→p L i j≤8)
   {i j:Fin 4} (a:i≠j) (g:aE L i=4) (m:aE L j=4):
   ∃
    ρ:Equiv.Perm (Fin 4),ρ 0=i∧ρ 1=j∧
    let M:=L.map (Ad.re ρ 1)
-   aD M∧aX M=8∧(∀k,u M k=0)∧(∀k l,k≠l→p M k l≤6)∧aE M 0=4∧aE M 1=4:=by
+   aD M∧aX M=10∧(∀k,u M k=0)∧(∀k l,k≠l→p M k l≤8)∧aE M 0=4∧aE M 1=4:=by
  obtain⟨σ,hσi,hσj⟩:=zD i j a
  let τ:Equiv.Perm (Fin 4):=Equiv.swap 0 2*Equiv.swap 1 3
  let ρ:=σ*τ
@@ -5719,7 +5719,7 @@ open Aa An Ae Matrix
 lemma aGe:vK:=by
  intro L hL w A e;obtain⟨i,j,y,c,m⟩:=A1.tU hL w A e;obtain⟨ρ,_,_,g,s,C,o,r,B⟩:=As.wX hL w A e y c m
  let M:=L.map (Ad.re ρ 1)
- obtain⟨f,a,d,H,_,_,l⟩:=As.aBb g s C o r B;have u:p M 0 1=6:=by have h:=bB (i:=0) (j:=1) (k:=2) C (by decide) (by decide) (by decide);change aX M+aE M 0≤p M 0 1+p M 0 2 at h;have c:=o 0 1 (by decide);have m:=o 0 2 (by decide);change aX M=8 at s;change aE M 0=4 at r;change p M 0 1≤6 at c;change p M 0 2≤6 at m;omega
+ obtain⟨f,a,d,H,_,_,l⟩:=As.aBb g s C o r B;have u:p M 0 1=8:=by have h:=bB (i:=0) (j:=1) (k:=2) C (by decide) (by decide) (by decide);change aX M+aE M 0≤p M 0 1+p M 0 2 at h;have c:=o 0 1 (by decide);have m:=o 0 2 (by decide);change aX M=10 at s;change aE M 0=4 at r;change p M 0 1≤8 at c;change p M 0 2≤8 at m;omega
  obtain⟨G,v⟩:=Bb.aG0 g u r B
  let b:=As.wY f
  have F:Function.Injective b:=fun p q h=>a 3 (neg_injective h)
@@ -6105,7 +6105,7 @@ lemma sP
   (a:∀{S:Submodule ℂ aC},aD S→aX S=7→
     (∀t∈S,row 0 t=row 1 t)→False)
   {L:Submodule ℂ aC} (hL:aD L)
-  (d:aX L=8) (g:p L 2 3=7) (h:∀i,u L i=0):aBf L:=by
+  (d:aX L=10) (g:p L 2 3=7) (h:∀i,u L i=0):aBf L:=by
  rcases iT hL d g h with⟨S,_,c,b,e⟩|f
  ·exact(a c b e).elim
  ·exact f
@@ -6116,7 +6116,7 @@ lemma uZ {S:Submodule ℂ aC} (a:aD S) (b:aX S=7)
   (hfix:∀t∈S,row 0 t=row 1 t):False:=by
  obtain⟨x,y,c,d⟩:=lM a b hfix;exact yB (rL a c d)
 lemma qD {L:Submodule ℂ aC} (hL:aD L)
-  (a:aX L=8) (b:p L 2 3=7) (c:∀i,u L i=0):aBf L:=
+  (a:aX L=10) (b:p L 2 3=7) (c:∀i,u L i=0):aBf L:=
  sP uZ hL a b c
 end Ac.Al
 namespace Ac.Am
@@ -6222,7 +6222,7 @@ lemma aEd (X Y U:bE)
  obtain⟨j,a⟩:=h 1 0 one_ne_zero;obtain⟨s₁,d⟩:=h (-1) 0 (by norm_num);obtain⟨k,e⟩:=h 1 1 one_ne_zero;have f:=(h 2 0 (by norm_num)).2;have g:=(h 1 (-1) one_ne_zero).2;have i:=(h 2 1 (by norm_num)).2;simp at*
  grobner
 lemma oB {L:Submodule ℂ aC} (hL:aD L) (g:p L 2 3=7)
-  (x:aX L=8) {U:aC} (f:U∈L) (d:dY U) (e:eP U)
+  (x:aX L=10) {U:aC} (f:U∈L) (d:dY U) (e:eP U)
   (n:Module.finrank ℂ ((aEc L).map aB)=4):False:=by
  obtain⟨t,_,u,_⟩:=iK g (cB hL g f d e);rw[t,n] at u;have a:(aP L).map aG= ⊤ :=by apply Submodule.eq_top_of_finrank_eq;rw[Module.finrank_fin_fun];omega
  have lift (v:bE):∃X∈aP L,aG X=v:=by change v∈(aP L).map aG;rw[a];trivial
@@ -6732,7 +6732,7 @@ lemma qP {L:Submodule ℂ aC} (hL:aD L) {U:aC}
 end Ac.Ak
 namespace Ac.Ak
 open Aa Ae Aq
-lemma nS {L:Submodule ℂ aC} (hL:aD L) (N:aX L=8)
+lemma nS {L:Submodule ℂ aC} (hL:aD L) (N:aX L=10)
   (q:p L 2 3=7) {U:aC} (n:U∈L) (r:iQ U) (o:rN U≠0)
   (E:Module.finrank ℂ ((V L).map aB)=5)
   (y:∀Y∈K L,Aj.bC Y 0=0) (z:∀Y∈K L,Aj.bC Y 1=0):False:=by
@@ -6757,13 +6757,13 @@ lemma nS {L:Submodule ℂ aC} (hL:aD L) (N:aX L=8)
    | exact congrFun c (1,0) | exact congrFun c (1,1) | exact congrFun c (1,2))
   y z (xK hL A) t
  omega
-lemma jC {L:Submodule ℂ aC} (hL:aD L) (i:aX L=8)
+lemma jC {L:Submodule ℂ aC} (hL:aD L) (i:aX L=10)
   (d:p L 2 3=7) {U:aC} (a:U∈L) (c:iQ U) (b:rN U≠0)
   (h:Module.finrank ℂ ((V L).map aB)=5)
   (e:cE 1 0∈(V L).map aB) (f:cE 0 1∈(V L).map aB):False:=by
  have g:=lA d (cB hL d a c b) h;exact nS hL i d a c b h
   (qP hL a c b g e f 0) (qP hL a c b g e f 1)
-lemma qF {L:Submodule ℂ aC} (hL:aD L) (l:aX L=8)
+lemma qF {L:Submodule ℂ aC} (hL:aD L) (l:aX L=10)
   (i:p L 2 3=7) {U:aC} (d:U∈L) (j:iQ U) (f:rN U≠0)
   (c:Module.finrank ℂ ((V L).map aB)=5) {p:Module.Dual ℂ iA} {a b:ℂ}
   (g:nF p a b≠0) (h:∀X∈V L,nF p a b (aB X)=0):False:=by
@@ -6772,7 +6772,7 @@ lemma qF {L:Submodule ℂ aC} (hL:aD L) (l:aX L=8)
   ·change a*p 1+b*p 0=0;rw[e,map_zero];ring
   ·change a*p 0+b*p 1=0;rw[e,map_zero];ring
  ·exact nG hL i d j f c k
-lemma pK {L:Submodule ℂ aC} (hL:aD L) (s:aX L=8)
+lemma pK {L:Submodule ℂ aC} (hL:aD L) (s:aX L=10)
   (u:p L 2 3=7) {U:aC} (l:U∈L) (w:iQ U) (q:rN U≠0)
   (v:Module.finrank ℂ ((V L).map aB)=5) (R:Fin 2→Module.Dual ℂ iA)
   (t:R≠0) (f:¬LinearIndependent ℂ R)
@@ -6972,7 +6972,7 @@ lemma oC (S:Submodule ℂ jH) (c:Module.finrank ℂ S=5):
  obtain⟨F,d,b⟩:=jD S (by simp[c,jH]);have a:=(LinearMap.injective_iff_surjective_of_finrank_eq_finrank
   (f:=iE) (by simp[vA,jH,Module.finrank_matrix,Subspace.dual_finrank_eq])).mp gK
  obtain⟨R,rfl⟩:=a F;exact⟨R,d,b⟩
-lemma pL {L:Submodule ℂ aC} (hL:aD L) (g:aX L=8)
+lemma pL {L:Submodule ℂ aC} (hL:aD L) (g:aX L=10)
   (f:p L 2 3=7) {U:aC} (c:U∈L) (b:Am.dY U)
   (a:Am.eP U) (d:Module.finrank ℂ ((Am.aEc L).map aB)=5):
   False:=by
@@ -7020,7 +7020,7 @@ lemma aBn {L:Submodule ℂ aC} (d:∀i,u L i=0) (σ:Equiv.Perm F):
  rw[Submodule.finrank_eq_zero.mp (d i)] at b;have f:t=0:=by simpa using b
  simp[f]
 def aBo (M:Submodule ℂ aC):=Module.finrank ℂ ((M⊔Submodule.span ℂ {(1:aC)}).map aB)
-def nI (k:ℕ):=∀L:Submodule ℂ aC,aD L→aX L=8→p L 2 3=7→
+def nI (k:ℕ):=∀L:Submodule ℂ aC,aD L→aX L=10→p L 2 3=7→
  (∀i,u L i=0)→∀a b:aH,bD a b 0 0∈L→
  (∀j,j≠0→j≠1→a j=0∧b j=0)→
  aL a b 0 1=0→a 0*b 1-a 1*b 0≠0→
@@ -7031,10 +7031,10 @@ lemma yG (X:nI 4) (Z:nI 5) (c6:nI 6):HighPair:=by
  let M:=L.map (re 1 σ)
  let A:=nH σ a
  let B':=nH σ b
- have N:aD M:=gI 1 σ hL;have hm:aX M=8:=(nL 1 σ L).trans E;have z:p M 2 3=7:=(aHt σ L 2 3).trans P;have f:bD A B' 0 0∈M:=by refine⟨bD a b 0 0,hU,?_⟩;funext ⟨r,c⟩;fin_cases r<;>rfl
+ have N:aD M:=gI 1 σ hL;have hm:aX M=10:=(nL 1 σ L).trans E;have z:p M 2 3=7:=(aHt σ L 2 3).trans P;have f:bD A B' 0 0∈M:=by refine⟨bD a b 0 0,hU,?_⟩;funext ⟨r,c⟩;fin_cases r<;>rfl
  have s (k:F) (J:k≠0) (K:k≠1):A k=0∧B' k=0:=w (σ k) (fun u=>J (σ.injective (u.trans m.symm))) (fun u=>K (σ.injective (u.trans n.symm)));have l (v:aH) (k:F):nH σ v k=v (σ k):=rfl;have sum (v:aH):cS (nH σ v)=cS v:=Equiv.sum_comp σ v;have det:A 0*B' 1-A 1*B' 0≠0:=by simpa only[A,B',l,m,n] using t
  have B:=oQ N z f s det;obtain⟨g,_,hg,C⟩:=B;have o:(1:jH)∉M.map aB:=by rintro⟨x,hx,R⟩;have e:=C x 0 ⟨x,hx,by funext ij;simp[aM]⟩;rw[R,hg] at e;exact one_ne_zero e
- obtain⟨_,_,_,O,G⟩:=iK z o;change 4≤aBo M at O;change aBo M≤6 at G;have d {k:ℕ} (h:nI k) (hk:aBo M=k):False:=by
+ obtain⟨_,_,_,O,G⟩:=iK z o;change 4≤aBo M at O;change aBo M≤8 at G;have d {k:ℕ} (h:nI k) (hk:aBo M=k):False:=by
   apply h M N hm z (aBn Q σ) A B' f s _ det _ _ _ _ _ _ hk
   ·simpa only[A,B',aL,l,m,n] using y
   ·simpa only[A,l,m] using S
@@ -7084,7 +7084,7 @@ lemma aEi (σ:Equiv.Perm (Fin 7)) (v:bI) (j):
  have S (f:aH):=Equiv.sum_comp σ f;simp only[G,cJ,vF,LinearMap.funLeft_apply];simp only[S (fun k=>v (0,k)),S (fun k=>v (1,k)),S (fun k=>v (2,k)),
   S (fun k=>v (0,k)*v (1,k)),S (fun k=>v (0,k)*v (2,k)),
   S (fun k=>v (1,k)*v (2,k)),S (fun k=>v (0,k)*v (1,k)*v (2,k))]
-lemma aCq {L:Submodule ℂ aC} (hL:aD L) (d:aX L=8)
+lemma aCq {L:Submodule ℂ aC} (hL:aD L) (d:aX L=10)
   {i:Fin 4} (c:u L i=3) (σ:Equiv.Perm (Fin 7)):
   let L':=L.map (pP σ)
   aD L'∧aX L'=8∧u L' i=3∧U L' i=(U L i).map (LinearMap.funLeft ℂ ℂ σ):=by
@@ -7134,7 +7134,7 @@ lemma aCr (η:aH) (r:Finset (Fin 7)→ℕ)
  by_cases w:η d=η b
  ·exact j a c b d (Ne.symm p.2.1) i g (w▸g) l.symm (w▸l.symm)
  exact j a b c d (Ne.symm p.2.2) g i (Ne.symm t) l (Ne.symm w)
-lemma pN {L:Submodule ℂ aC} (hL:aD L) (h8:aX L=8)
+lemma pN {L:Submodule ℂ aC} (hL:aD L) (h8:aX L=10)
   {i:Fin 4} (Z:u L i=3):
   ∃
    (L':Submodule ℂ aC) (B:Finset (Fin 7)),
