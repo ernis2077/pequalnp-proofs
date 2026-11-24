@@ -37,7 +37,8 @@ lemma charB_iff (s s' : Fin 21) :
       (((line s ∩ T).card = 2 ∧ (line s' ∩ T).card = 2) ∨
        ((line s ∩ T).card = 2 ∧ (line s' ∩ T).card = 1 ∧ line s' ∩ T ∩ line s = ∅) ∨
        ((line s' ∩ T).card = 2 ∧ (line s ∩ T).card = 1 ∧ line s ∩ T ∩ line s' = ∅)) := by
-  simp [charB, Bool.and_eq_true, Bool.or_eq_true, Finset.card_eq_zero]
+  simp [charB, Bool.and_eq_true, Bool.or_eq_true, Finset.card_eq_zero, and_assoc]
+  tauto
 
 def card1Vals : Fin 9 → Fin 21 := ![2, 5, 6, 8, 9, 17, 18, 19, 20]
 
@@ -168,19 +169,25 @@ lemma base_subset_T (c : Fin 21 → Bool) (s p : Fin 21) : base c s p ⊆ T := b
   · intro x hx
     rcases Finset.mem_image.mp hx with ⟨v, hv, rfl⟩
     have hvT : v ∈ T := (Finset.mem_inter.mp hv).2
-    split_ifs with hv2
+    split_ifs
     · exact Finset.mem_insert_self _ _
-    · have : v = 0 ∨ v = 1 ∨ v = 2 := by
+    · have : v = (0 : Fin 21) ∨ v = 1 ∨ v = 2 := by
         simpa [T, Finset.mem_insert, Finset.mem_singleton] using hvT
-      rcases this with hv' | hv' | hv' <;> simp [hv', T, Fin.ext_iff] at hv2 ⊢
+      rcases this with hv' | hv' | hv'
+      · simp [hv', T]
+      · simp [hv', T]
+      · simp [hv', T]
   · intro x hx
     rcases Finset.mem_image.mp hx with ⟨v, hv, rfl⟩
     have hvT : v ∈ T := (Finset.mem_inter.mp hv).2
-    split_ifs with hv0
+    split_ifs
     · exact Finset.mem_insert_self _ _
-    · have : v = 0 ∨ v = 1 ∨ v = 2 := by
+    · have : v = (0 : Fin 21) ∨ v = 1 ∨ v = 2 := by
         simpa [T, Finset.mem_insert, Finset.mem_singleton] using hvT
-      rcases this with hv' | hv' | hv' <;> simp [hv', T, Fin.ext_iff] at hv0 ⊢
+      rcases this with hv' | hv' | hv'
+      · simp [hv', T]
+      · simp [hv', T]
+      · simp [hv', T]
   · simp [T]
 
 lemma mutual_of_empty_inter (c : Fin 21 → Bool) (s s' : Fin 21)
@@ -293,22 +300,30 @@ lemma mutual_implies_char_of_card2 (c : Fin 21 → Bool) (s s' : Fin 21) (hne : 
       have hsym : mutualB c s' s = mutualB c s s' := by
         simp [mutualB, Bool.and_comm]
       simp [hsym, hm] at this
-    · rw [mutual_card2_card1 c s s' hs (by omega)] at hm
+    · have hs1 : (line s' ∩ T).card = 1 := hsc
+      rw [mutual_card2_card1 c s s' hs hs1] at hm
       cases hc : c s'
-      · simpa [hc, hm] using (both_orients_card2_card1 s s' hs (by omega)).2
-      · simpa [hc, hm] using (both_orients_card2_card1 s s' hs (by omega)).1
-    · rw [mutual_card2_card2 c s s' hs (by omega), char_iff_true s s' hne] at hm
+      · have hbo := (both_orients_card2_card1 s s' hs hs1).2
+        simpa [hc, hbo] using hm
+      · have hbo := (both_orients_card2_card1 s s' hs hs1).1
+        simpa [hc, hbo] using hm
+    · have hs2 : (line s' ∩ T).card = 2 := hsc
+      rw [mutual_card2_card2 c s s' hs hs2, char_iff_true s s' hne] at hm
       exact hm
   · have hsle := card_le_two s
     interval_cases hsc : (line s ∩ T).card
     · have hempty : line s ∩ T = ∅ := Finset.card_eq_zero.mp hsc
       have := mutual_of_empty_inter c s s' hempty
       simp [hm] at this
-    · rw [mutual_card1_card2 c s s' (by omega) hs'] at hm
+    · have hs1 : (line s ∩ T).card = 1 := hsc
+      rw [mutual_card1_card2 c s s' hs1 hs'] at hm
       cases hc : c s
-      · simpa [hc, hm] using (both_orients_card1_card2 s s' (by omega) hs').2
-      · simpa [hc, hm] using (both_orients_card1_card2 s s' (by omega) hs').1
-    · rw [mutual_card2_card2 c s s' (by omega) hs', char_iff_true s s' hne] at hm
+      · have hbo := (both_orients_card1_card2 s s' hs1 hs').2
+        simpa [hc, hbo] using hm
+      · have hbo := (both_orients_card1_card2 s s' hs1 hs').1
+        simpa [hc, hbo] using hm
+    · have hs2 : (line s ∩ T).card = 2 := hsc
+      rw [mutual_card2_card2 c s s' hs2 hs', char_iff_true s s' hne] at hm
       exact hm
 
 lemma mutual_classification (c : Fin 21 → Bool) (s s' : Fin 21) (hlt : s < s')
@@ -383,7 +398,9 @@ lemma fixed_disjoint_extra (f : Fin 9 → Bool) : Disjoint fixedPairs (extraPair
   obtain ⟨⟨i, j⟩, ⟨_, _⟩, rfl⟩ := heex
   have hi : (line (card1Vals i) ∩ T).card = 1 := card1Vals_is_card1 i
   have hj : (line (card1Vals j) ∩ T).card = 1 := card1Vals_is_card1 j
-  rcases h2 with h | h <;> omega
+  rcases h2 with h | h
+  · exact (by omega : ¬(line (card1Vals i) ∩ T).card = 2) h
+  · exact (by omega : ¬(line (card1Vals j) ∩ T).card = 2) h
 
 lemma conflictPairs_lift_eq (f : Fin 9 → Bool) :
     conflictPairs (lift f) = fixedPairs ∪ extraPairs f := by
