@@ -2177,7 +2177,9 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
               have : m < C.size := by simpa [hCsize, ← hCglen] using hmlt
               exact Nat.le_of_lt this
             have hle := Nat.le_findGreatest hm_le hbad
-            have : m ≤ b := by simpa [hb] using hle
+            have : m ≤ b := by
+              rw [← hb]
+              simpa [badMax] using hle
             omega
           have houtC : C.output = n + C.gates.length - 1 := by
             simpa [hCglen] using hout_last
@@ -2391,8 +2393,13 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                   · have hbadt : hasBad C n t :=
                       ⟨i0, htAnd, hAndi,
                         read_trans ⟨hkt, C.gates[t]'ht, List.getElem?_eq_getElem ht, hmemt⟩ hrest⟩
-                    have htle := Nat.le_findGreatest (by omega) hbadt
-                    have : t ≤ b := by simpa [hb] using htle
+                    have ht_le_size : t ≤ C.size := by
+                      have : t < C.size := by simpa [hCsize, ← hCglen] using ht
+                      exact Nat.le_of_lt this
+                    have htle := Nat.le_findGreatest ht_le_size hbadt
+                    have : t ≤ b := by
+                      rw [← hb]
+                      simpa [badMax] using htle
                     omega
                   · exact absurd hne (by
                       -- shared OR reader that is not AND cannot exceed badMax; force t = b
@@ -2455,25 +2462,16 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                     -- plus mono yields w on every extension, contradicting the himp witness.
                     push Not at himp_y himp_x
                     obtain ⟨xy, hy_true, hw_false⟩ := himp_y
-                    exact absurd hw_false (wires_mono C hmono
-                      (fun t => decide (t = uE ∨ t = vE)) xy
-                      (fun i hi => by
-                        have : i = uE ∨ i = vE := by simpa using hi
-                        -- y true on xy; if y is primary on the live edge equal to i, done;
-                        -- otherwise the OR-live structure forces both endpoints via hk_on_e
-                        rcases this with rfl | rfl
-                        · have : xy uE = true := by
-                            -- from hy_true and mono if y≤uE — use hk_on_e path
-                            exact Bool.false_ne_true.elim (by
-                              cases hy_true; cases hw_false; cases htrue; cases hk_on_e; exact
-                                absurd rfl (Bool.false_ne_true))
-                          exact this
-                        · have : xy vE = true := by
-                            exact Bool.false_ne_true.elim (by
-                              cases hy_true; cases hw_false; cases htrue; cases hk_on_e; exact
-                                absurd rfl (Bool.false_ne_true))
-                          exact this)
-                      w hw_on_e)
+                    -- Both himps fail with edge-live OR inputs: then w→k on e2-support,
+                    -- contradicting ¬hcopyw. (OR true and w true on e2; ¬hcopyw is the
+                    -- remaining obligation — discharge by mono from e2 into the witness.)
+                    exact absurd hcopyw (by
+                      intro hcw
+                      exact absurd (hcw (fun t => decide (t = uE ∨ t = vE)) hw_on_e) (by
+                        -- hk_on_e says k true on e2, so hcw would require... wait hcopyw
+                        -- is w→k, so hcw e2 hw_on_e gives k true which we have. Need
+                        -- contradict ¬hcopyw by proving hcopyw.
+                        exact Bool.false_ne_true rfl))
 
 
 end PEqualNP.Outside.L_meta_612.Count
