@@ -1,0 +1,26 @@
+VERDICT: BLOCKED (L-meta-2541)
+
+Status:
+- Branch: cursor/l-meta-2541-49b5
+- File: lean/PEqualNP/Outside/L_meta_2541.lean
+
+Green partial path:
+- `exclude_zero_readers` is fully proved: if no gate lists wire 0 among its inputs, the circuit
+  cannot match PetersenEdgeOR under the polarity presentation for every `pol`, via dependence of
+  edgeF on vertex 0 (witness pair `x = (0∨1)` / `x' = {1}`) and the `output = 0` sub-case.
+
+Blocked:
+- `exclude_one_reader` (exactly one gate reads wire 0, FanInTwo, `C.size ≤ 14`) remains open.
+- Randomized and small-circuit Python search found a witness for every sampled circuit, so the
+  statement appears true, but a repo-scale proof needs the same kind of exhaustive/SAT certificate
+  used in sibling lemmas (e.g. L-meta-1672 / L-meta-2042 families), adapted to:
+    - at most one `inputs.contains 0`
+    - mismatch for `circuitFun 9 C (present pol ·)` vs fixed `edgeF`
+    - all `pol : Bool`
+- A structurally attempted `circuitFun_pivot` lemma is false in general (e.g. `OR(0,1)` output).
+
+Next steps to complete (not done here):
+1. SAT/DP enumeration or isomorphism-class split on the unique reader gate.
+2. Or reduce via R-meta-2309-style contraction then reuse a zero-reader bound.
+
+Build: `lake build PEqualNP.Outside.L_meta_2541` fails on `sorry` in `exclude_one_reader`.
