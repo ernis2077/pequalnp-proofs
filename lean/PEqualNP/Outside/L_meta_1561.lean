@@ -32,13 +32,13 @@ def charB (s s' : Fin 21) : Bool :=
   (ks == 2 && ks' == 1 && (line s' ∩ T ∩ line s).card == 0) ||
   (ks' == 2 && ks == 1 && (line s ∩ T ∩ line s').card == 0)
 
+set_option maxHeartbeats 1000000 in
 lemma charB_iff (s s' : Fin 21) :
     charB s s' = true ↔
       (((line s ∩ T).card = 2 ∧ (line s' ∩ T).card = 2) ∨
        ((line s ∩ T).card = 2 ∧ (line s' ∩ T).card = 1 ∧ line s' ∩ T ∩ line s = ∅) ∨
        ((line s' ∩ T).card = 2 ∧ (line s ∩ T).card = 1 ∧ line s ∩ T ∩ line s' = ∅)) := by
-  simp [charB, Bool.and_eq_true, Bool.or_eq_true, Finset.card_eq_zero, and_assoc]
-  tauto
+  decide
 
 def card1Vals : Fin 9 → Fin 21 := ![2, 5, 6, 8, 9, 17, 18, 19, 20]
 
@@ -163,31 +163,30 @@ lemma mutual_iff (c : Fin 21 → Bool) (s s' : Fin 21) :
 lemma base_subset_T (c : Fin 21 → Bool) (s p : Fin 21) : base c s p ⊆ T := by
   unfold base
   split_ifs with hT h2 h1 hc
-  · simp
-  · intro x hx
-    exact (Finset.mem_sdiff.mp hx).1
-  · intro x hx
-    rcases Finset.mem_image.mp hx with ⟨v, hv, rfl⟩
+  · exact Finset.empty_subset _
+  · exact Finset.sdiff_subset
+  · refine Finset.image_subset_iff.2 ?_
+    intro v hv
     have hvT : v ∈ T := (Finset.mem_inter.mp hv).2
     split_ifs
     · exact Finset.mem_insert_self _ _
-    · have : v = (0 : Fin 21) ∨ v = 1 ∨ v = 2 := by
+    · have : v = (0 : Fin 21) ∨ v = (1 : Fin 21) ∨ v = (2 : Fin 21) := by
         simpa [T, Finset.mem_insert, Finset.mem_singleton] using hvT
-      rcases this with hv' | hv' | hv'
-      · simp [hv', T]
-      · simp [hv', T]
-      · simp [hv', T]
-  · intro x hx
-    rcases Finset.mem_image.mp hx with ⟨v, hv, rfl⟩
+      rcases this with rfl | rfl | rfl
+      · simp [T]
+      · simp [T]
+      · simp [T]
+  · refine Finset.image_subset_iff.2 ?_
+    intro v hv
     have hvT : v ∈ T := (Finset.mem_inter.mp hv).2
     split_ifs
-    · exact Finset.mem_insert_self _ _
-    · have : v = (0 : Fin 21) ∨ v = 1 ∨ v = 2 := by
+    · simp [T]
+    · have : v = (0 : Fin 21) ∨ v = (1 : Fin 21) ∨ v = (2 : Fin 21) := by
         simpa [T, Finset.mem_insert, Finset.mem_singleton] using hvT
-      rcases this with hv' | hv' | hv'
-      · simp [hv', T]
-      · simp [hv', T]
-      · simp [hv', T]
+      rcases this with rfl | rfl | rfl
+      · simp [T]
+      · simp [T]
+      · simp [T]
   · simp [T]
 
 lemma mutual_of_empty_inter (c : Fin 21 → Bool) (s s' : Fin 21)
@@ -271,6 +270,7 @@ lemma both_orients_card1_card2 : ∀ s s' : Fin 21,
       mutualB (fun _ => false) s s' = charB s s' := by
   decide
 
+set_option maxHeartbeats 800000 in
 lemma char_implies_mutual (c : Fin 21 → Bool) (s s' : Fin 21) (hne : s ≠ s')
     (hchar : charB s s' = true) : mutualB c s s' = true := by
   have hcases := (charB_iff s s').1 hchar
@@ -289,6 +289,7 @@ lemma char_implies_mutual (c : Fin 21 → Bool) (s s' : Fin 21) (hne : s ≠ s')
     · have hbo := (both_orients_card1_card2 s s' h.2.1 h.1).1
       simp [hc, hbo, hchar]
 
+set_option maxHeartbeats 800000 in
 lemma mutual_implies_char_of_card2 (c : Fin 21 → Bool) (s s' : Fin 21) (hne : s ≠ s')
     (h2 : (line s ∩ T).card = 2 ∨ (line s' ∩ T).card = 2)
     (hm : mutualB c s s' = true) : charB s s' = true := by
