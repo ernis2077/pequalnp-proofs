@@ -391,179 +391,6 @@ def InK {n m : ℕ} (gates : List Gate) (S : Fin m → Finset (Fin n))
     gates[(g : ℕ)].op = GateOp.or ∧ gates[(g : ℕ)].inputs.length = 2 ∧
     ∀ r ∈ gates[(g : ℕ)].inputs, ∃ p ∈ S i, value ⟨gates, 0⟩ (rowL R i p) r = true
 
-
-lemma or_decomp {n : ℕ} (C : Circuit) (hC : ∀ g ∈ C.gates, g.op = GateOp.or)
-    (x : Fin n → Bool) (w : ℕ) :
-    value C x w = true → ∃ q : Fin n, x q = true ∧ value C (fun v => decide (v = q)) w = true := by
-  induction w using Nat.strong_induction_on with
-  | _ w ih =>
-    by_cases hn : w < n
-    · intro h
-      refine ⟨⟨w, hn⟩, ?_, ?_⟩
-      · have h2 := input_value C x ⟨w, hn⟩
-        rw [← h2]
-        exact h
-      · have h2 := input_value C (fun v => decide (v = (⟨w, hn⟩ : Fin n))) ⟨w, hn⟩
-        simp only [decide_true] at h2
-        exact h2
-    by_cases hw : w < n + C.gates.length
-    · have hk : w - n < C.gates.length := by omega
-      have hwk : w = n + (w - n) := by omega
-      intro h
-      rw [hwk] at h
-      obtain ⟨r, hr, hlt, hv⟩ := (or_value C (w - n) hk (hC _ (List.getElem_mem hk)) x).mp h
-      obtain ⟨q, hq, hq2⟩ := ih r (by omega) hv
-      refine ⟨q, hq, ?_⟩
-      rw [hwk]
-      exact (or_value C (w - n) hk (hC _ (List.getElem_mem hk)) _).mpr ⟨r, hr, hlt, hq2⟩
-    · intro h
-      rw [missing_value C x w (by unfold Circuit.size; omega)] at h
-      exact Bool.noConfusion h
-
-theorem main : ∀ (q n m : ℕ) (S : Fin m → Finset (Fin n))
-    (R : Fin m → Fin n → Finset (Fin n)),
-    1 ≤ q → (∀ i : Fin m, (S i).card = q + 1) →
-    (∀ i j : Fin m, i ≠ j → (S i ∩ S j).card ≤ 1) →
-    (∀ (i : Fin m) (p : Fin n), p ∈ S i → R i p ∩ S i = {p}) →
-    (∀ i j : Fin m, i ≠ j → ¬ ((∃ p ∈ S i \ S j, (R i p ∩ S j).Nonempty) ∧
-      (∃ s ∈ S j \ S i, (R j s ∩ S i).Nonempty))) →
-    ∀ (gates : List PEqualNP.CircuitLowerBounds.Gate) (out : Fin m → ℕ),
-    (∀ g ∈ gates, (g.op = PEqualNP.CircuitLowerBounds.GateOp.and ∨ g.op = PEqualNP.CircuitLowerBounds.GateOp.or) ∧
-      g.inputs.length ≤ 2) →
-    (∀ w : Fin m, PEqualNP.CircuitLowerBounds.Circuit.eval ⟨gates, out w⟩ (List.ofFn (fun v : Fin n => decide (v ∉ S w))) = false) →
-    (∀ (w : Fin m) (p : Fin n), p ∈ S w →
-      PEqualNP.CircuitLowerBounds.Circuit.eval ⟨gates, out w⟩ (List.ofFn (fun v : Fin n => decide (v ∈ R w p))) = true) →
-    ∀ I : Finset (Fin gates.length), (∀ g : Fin gates.length, ((gates.get g).op = PEqualNP.CircuitLowerBounds.GateOp.or ∧ (gates.get g).inputs.length = 2 ∧
-      (∃ i : Fin m, PEqualNP.CircuitLowerBounds.Circuit.eval ⟨gates, n + (g : ℕ)⟩ (List.ofFn (fun v : Fin n => decide (v ∉ S i))) = false) ∧
-      ∀ w ∈ (gates.get g).inputs, ∃ (i : Fin m) (p : Fin n), p ∈ S i ∧
-        PEqualNP.CircuitLowerBounds.Circuit.eval ⟨gates, w⟩ (List.ofFn (fun v : Fin n => decide (v ∈ R i p))) = true) → g ∈ I) → m * q ≤ I.card := by
-  intro q n m S R hq hcard hint hR hno gates out hg hfalse htrue I hI
-  classical
-  let K : Fin m → Finset (Fin gates.length) := fun i => Finset.univ.filter fun g =>
-    PEqualNP.Outside.L_meta_1591.InK gates S R i g
-  have hKq : ∀ i, q ≤ (K i).card := by
-    intro i
-    have h := PEqualNP.Outside.L_meta_1591.family (n := n) gates hg (S i)
-      (PEqualNP.Outside.L_meta_1591.rowL R i) (PEqualNP.Outside.L_meta_1591.coY S i) (out i)
-      (fun p hp => ⟨htrue i p hp, hfalse i⟩)
-      (fun w hw hc => by
-        obtain ⟨p, hp, p', hp', hne, hs1, hs2⟩ := hc
-        have e : ∀ a ∈ S i, PEqualNP.Outside.L_meta_1591.Sv ⟨gates, 0⟩
-            (PEqualNP.Outside.L_meta_1591.rowL R i) (PEqualNP.Outside.L_meta_1591.coY S i) a w →
-            (⟨w, hw⟩ : Fin n) = a := by
-          intro a ha hsa
-          have h1 : PEqualNP.Outside.L_meta_1591.value ⟨gates, 0⟩
-            (PEqualNP.Outside.L_meta_1591.rowL R i a) ((⟨w, hw⟩ : Fin n) : ℕ) = true := hsa.1
-          have h2 : PEqualNP.Outside.L_meta_1591.value ⟨gates, 0⟩
-            (PEqualNP.Outside.L_meta_1591.coY S i) ((⟨w, hw⟩ : Fin n) : ℕ) = false := hsa.2
-          rw [PEqualNP.Outside.L_meta_1591.input_value] at h1 h2
-          simp only [PEqualNP.Outside.L_meta_1591.rowL, PEqualNP.Outside.L_meta_1591.coY,
-            decide_eq_true_eq, decide_eq_false_iff_not, not_not] at h1 h2
-          have h3 : (⟨w, hw⟩ : Fin n) ∈ R i a ∩ S i := Finset.mem_inter.mpr ⟨h1, h2⟩
-          rw [hR i a ha] at h3
-          exact Finset.mem_singleton.mp h3
-        exact hne ((e p hp hs1).symm.trans (e p' hp' hs2)))
-      (K i)
-      (fun g hm hop hl hQ => Finset.mem_filter.mpr ⟨Finset.mem_univ g, hm, hop, hl, hQ⟩)
-    have := hcard i
-    omega
-  have hKI : ∀ i, K i ⊆ I := by
-    intro i g hgK
-    obtain ⟨hm, hop, hl, hQ⟩ := (Finset.mem_filter.mp hgK).2
-    refine hI g ⟨hop, hl, ⟨i, ?_⟩, fun w hw => ?_⟩
-    · obtain ⟨p, _, _, _, _, hs, _⟩ := hm
-      exact hs.2
-    · obtain ⟨p, hp, hv⟩ := hQ w hw
-      exact ⟨i, p, hp, hv⟩
-  have hdisj : ∀ i ∈ (Finset.univ : Finset (Fin m)), ∀ j ∈ (Finset.univ : Finset (Fin m)),
-      i ≠ j → Disjoint (K i) (K j) := by
-    intro i _ j _ hij
-    refine Finset.disjoint_left.mpr fun g hgi hgj => ?_
-    have hmi := (Finset.mem_filter.mp hgi).2.1
-    have hmj := (Finset.mem_filter.mp hgj).2.1
-    have hyi : PEqualNP.Outside.L_meta_1591.value ⟨gates, 0⟩
-        (PEqualNP.Outside.L_meta_1591.coY S i) (n + (g : ℕ)) = false := by
-      obtain ⟨p, _, _, _, _, hs, _⟩ := hmi
-      exact hs.2
-    have hyj : PEqualNP.Outside.L_meta_1591.value ⟨gates, 0⟩
-        (PEqualNP.Outside.L_meta_1591.coY S j) (n + (g : ℕ)) = false := by
-      obtain ⟨p, _, _, _, _, hs, _⟩ := hmj
-      exact hs.2
-    by_cases hA : ∃ p ∈ S i \ S j, (R i p ∩ S j).Nonempty
-    · have hB : ¬ ∃ s ∈ S j \ S i, (R j s ∩ S i).Nonempty := fun hB => hno i j hij ⟨hA, hB⟩
-      exact PEqualNP.Outside.L_meta_1591.kill gates hg S R j i
-        (by rw [Finset.inter_comm]; exact hint i j hij) hB _ hmj hyi
-    · exact PEqualNP.Outside.L_meta_1591.kill gates hg S R i j (hint i j hij) hA _ hmi hyj
-  have hsub : Finset.univ.biUnion K ⊆ I := fun g hgm => by
-    obtain ⟨i, _, hgi⟩ := Finset.mem_biUnion.mp hgm
-    exact hKI i hgi
-  have h1 := Finset.card_le_card hsub
-  rw [Finset.card_biUnion hdisj] at h1
-  have h2 : ∑ i : Fin m, q ≤ ∑ i : Fin m, (K i).card := Finset.sum_le_sum fun i _ => hKq i
-  rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, smul_eq_mul] at h2
-  omega
-
-theorem orcase : ∀ (q N : ℕ) (L : Fin N → Finset (Fin N)) (i0 : Fin N) (T0 : Finset (Fin N)),
-    2 ≤ q → N = q ^ 2 + q + 1 → (∀ i : Fin N, (L i).card = q + 1) → (∀ i j : Fin N, i ≠ j → (L i ∩ L j).card = 1) →
-    (∀ p p' : Fin N, p ≠ p' → ∃ i : Fin N, p ∈ L i ∧ p' ∈ L i) →
-    3 ≤ q → T0 ⊆ L i0 → T0.card = 3 →
-    ∀ (gates : List PEqualNP.CircuitLowerBounds.Gate) (o : Fin N → ℕ),
-    (∀ g ∈ gates, g.op = PEqualNP.CircuitLowerBounds.GateOp.or ∧ g.inputs.length ≤ 2) →
-    (∀ (t : Fin N) (x : Fin N → Bool), ((∃ v ∈ T0, x v = true) ∨ ∃ s : Fin N, ∀ v : Fin N, x v = false → v ∈ L s) →
-      PEqualNP.CircuitLowerBounds.Circuit.eval ⟨gates, o t⟩ (List.ofFn x) = decide (∃ v ∈ L t, x v = true)) →
-    N * q ≤ gates.length := by
-  intro q N L i0 T0 _ _ hcard hinter _ _ _ _ gates o hg hev
-  classical
-  have hg' : ∀ g ∈ gates, (g.op = PEqualNP.CircuitLowerBounds.GateOp.and ∨
-      g.op = PEqualNP.CircuitLowerBounds.GateOp.or) ∧ g.inputs.length ≤ 2 :=
-    fun g h => ⟨Or.inr (hg g h).1, (hg g h).2⟩
-  have hfalse : ∀ t : Fin N, PEqualNP.Outside.L_meta_1591.value ⟨gates, 0⟩
-      (fun v : Fin N => decide (v ∉ L t)) (o t) = false := by
-    intro t
-    have h := hev t (fun v : Fin N => decide (v ∉ L t))
-      (Or.inr ⟨t, fun v hv => by simpa using hv⟩)
-    have h2 : decide (∃ v ∈ L t, (fun v : Fin N => decide (v ∉ L t)) v = true) = false := by
-      simp
-    rw [h2] at h
-    exact h
-  have htrue : ∀ (t p : Fin N), p ∈ L t → PEqualNP.Outside.L_meta_1591.value ⟨gates, 0⟩
-      (fun v : Fin N => decide (v ∈ ({p} : Finset (Fin N)))) (o t) = true := by
-    intro t p hp
-    have h := hev t (fun v : Fin N => decide (v ∉ L t ∨ v = p))
-      (Or.inr ⟨t, fun v hv => by
-        by_contra hc
-        simp [hc] at hv⟩)
-    have h2 : decide (∃ v ∈ L t, (fun v : Fin N => decide (v ∉ L t ∨ v = p)) v = true) = true := by
-      simp only [decide_eq_true_eq]
-      exact ⟨p, hp, Or.inr rfl⟩
-    rw [h2] at h
-    obtain ⟨q, hq, hq2⟩ := PEqualNP.Outside.L_meta_1591.or_decomp ⟨gates, 0⟩
-      (fun g hgm => (hg g hgm).1) (fun v : Fin N => decide (v ∉ L t ∨ v = p)) (o t) h
-    simp only [decide_eq_true_eq] at hq
-    rcases hq with hq | hq
-    · have h3 := PEqualNP.Outside.L_meta_1591.mono ⟨gates, 0⟩ hg'
-        (fun v : Fin N => decide (v = q)) (fun v : Fin N => decide (v ∉ L t))
-        (fun v hv => by
-          simp only [decide_eq_true_eq] at hv ⊢
-          rw [hv]
-          exact hq) (o t) hq2
-      rw [hfalse t] at h3
-      exact Bool.noConfusion h3
-    · subst hq
-      simpa using hq2
-  have hmain := PEqualNP.Outside.L_meta_1591.main q N N L (fun _ p => {p}) (by omega)
-    hcard
-    (fun i j hij => (hinter i j hij).le)
-    (fun i p hp => Finset.inter_eq_left.mpr (Finset.singleton_subset_iff.mpr hp))
-    (fun i j _ hc => by
-      obtain ⟨⟨p, hp, v, hv⟩, _⟩ := hc
-      have h1 := Finset.mem_inter.mp hv
-      have h2 := Finset.mem_singleton.mp h1.1
-      rw [h2] at h1
-      exact (Finset.mem_sdiff.mp hp).2 h1.2)
-    gates o hg' hfalse htrue Finset.univ (fun g _ => Finset.mem_univ g)
-  simpa using hmain
-
 theorem main2 : ∀ (q n m : ℕ) (S : Fin m → Finset (Fin n))
     (R : Fin m → Fin n → Finset (Fin n)),
     1 ≤ q → (∀ i : Fin m, (S i).card = q + 1) →
@@ -722,23 +549,27 @@ lemma cex {N : ℕ} (L : Fin N → Finset (Fin N)) (i0 : Fin N) (T0 : Finset (Fi
     have e2 := key s hs (F ⟨c s, hcT s⟩) h2'
     exact hF2 ⟨c s, hcT s⟩ (Subtype.ext e2.symm)
 
-theorem andcase (q n : ℕ) (L : Fin (n + 1) → Finset (Fin (n + 1))) (i0 : Fin (n + 1))
+theorem core (q n : ℕ) (L : Fin (n + 1) → Finset (Fin (n + 1))) (i0 : Fin (n + 1))
     (T0 : Finset (Fin (n + 1)))
     (hcard : ∀ i, (L i).card = q + 1) (hinter : ∀ i j, i ≠ j → (L i ∩ L j).card = 1)
-    (hq : 3 ≤ q) (hT : T0 ⊆ L i0) (hTc : T0.card = 3)
+    (hq : 3 ≤ q) (hT : T0 ⊆ L i0) (hTc : 3 ≤ T0.card)
     (gates : List Gate) (o : Fin (n + 1) → ℕ)
     (hg : ∀ g ∈ gates, (g.op = GateOp.and ∨ g.op = GateOp.or) ∧ g.inputs.length ≤ 2)
     (hev : ∀ (t : Fin (n + 1)) (x : Fin (n + 1) → Bool), ((∃ v ∈ T0, x v = true) ∨
-      ∃ s : Fin (n + 1), ∀ v : Fin (n + 1), x v = false → v ∈ L s) →
-      value ⟨gates, 0⟩ x (o t) = decide (∃ v ∈ L t, x v = true))
-    (m : Fin gates.length) (hm : gates[(m : ℕ)].op = GateOp.and) :
+      ∀ v : Fin (n + 1), v ∉ L i0 → x v = true) →
+      value ⟨gates, 0⟩ x (o t) = decide (∃ v ∈ L t, x v = true)) :
     (n + 1) * q ≤ gates.length := by
   classical
-  obtain ⟨c, hc1, hc2⟩ := cex L i0 T0 hinter hT (by omega)
+  obtain ⟨c, hc1, hc2⟩ := cex L i0 T0 hinter hT hTc
   have hfalse : ∀ t : Fin (n + 1), value ⟨gates, 0⟩ (fun v : Fin (n + 1) => decide (v ∉ L t)) (o t) = false := by
     intro t
-    have h := hev t (fun v : Fin (n + 1) => decide (v ∉ L t))
-      (Or.inr ⟨t, fun v hv => by simpa using hv⟩)
+    have hdom : (∃ v ∈ T0, (fun v : Fin (n + 1) => decide (v ∉ L t)) v = true) ∨
+        ∀ v : Fin (n + 1), v ∉ L i0 → (fun v : Fin (n + 1) => decide (v ∉ L t)) v = true := by
+      by_cases ht : t = i0
+      · rw [ht]
+        exact Or.inr fun v hv => decide_eq_true hv
+      · exact Or.inl ⟨c t, (hc1 t ht).1, decide_eq_true (hc1 t ht).2⟩
+    have h := hev t (fun v : Fin (n + 1) => decide (v ∉ L t)) hdom
     have h2 : decide (∃ v ∈ L t, (fun v : Fin (n + 1) => decide (v ∉ L t)) v = true) = false := by
       simp
     rw [h2] at h
@@ -809,21 +640,129 @@ theorem andcase (q n : ℕ) (L : Fin (n + 1) → Finset (Fin (n + 1))) (i0 : Fin
       exact h)
   let y : Fin (n + 1) → Bool := fun v => decide (v ∉ L i0)
   let l : Fin (n + 1) → Fin (n + 1) → Bool := fun a v => decide (v = a)
+  let yp : Fin (n + 1) → Fin (n + 1) → Bool := fun a v => decide (v ∉ L i0 ∨ v = a)
+  let A : Finset (Fin gates.length) := Finset.univ.filter fun g => gates[(g : ℕ)].op = GateOp.and
+  let ch : Fin gates.length → ℕ := fun g =>
+    if h : ∃ r ∈ gates[(g : ℕ)].inputs, r < n + 1 + (g : ℕ) ∧ value ⟨gates, 0⟩ y r = false
+    then Classical.choose h else o i0
+  let F : Finset ℕ := insert (o i0) (A.image ch)
+  have hFy : ∀ w ∈ F, value ⟨gates, 0⟩ y w = false := by
+    intro w hw
+    rcases Finset.mem_insert.mp hw with h | h
+    · rw [h]
+      exact hfalse i0
+    · obtain ⟨g, _, rfl⟩ := Finset.mem_image.mp h
+      by_cases hx : ∃ r ∈ gates[(g : ℕ)].inputs, r < n + 1 + (g : ℕ) ∧ value ⟨gates, 0⟩ y r = false
+      · have e : ch g = Classical.choose hx := dite_eq_left hx
+        rw [e]
+        exact (Classical.choose_spec hx).2.2
+      · have e : ch g = o i0 := dite_eq_right hx
+        rw [e]
+        exact hfalse i0
+  have hFcard : F.card ≤ A.card + 1 := by
+    have h1 := Finset.card_insert_le (o i0) (A.image ch)
+    have h2 : (A.image ch).card ≤ A.card := Finset.card_image_le
+    change F.card ≤ _ at h1
+    omega
+  have key : ∀ p : Fin (n + 1), ∀ w : ℕ, value ⟨gates, 0⟩ (yp p) w = true →
+      value ⟨gates, 0⟩ y w = false →
+      value ⟨gates, 0⟩ (l p) w = true ∨ ∃ d ∈ F, value ⟨gates, 0⟩ (l p) d = true := by
+    intro p w
+    induction w using Nat.strong_induction_on with
+    | _ w ih =>
+      intro h1 h2
+      by_cases hn : w < n + 1
+      · left
+        have e1 : yp p ⟨w, hn⟩ = true := (input_value ⟨gates, 0⟩ (yp p) ⟨w, hn⟩).symm.trans h1
+        have e2 : y ⟨w, hn⟩ = false := (input_value ⟨gates, 0⟩ y ⟨w, hn⟩).symm.trans h2
+        have e3 : (⟨w, hn⟩ : Fin (n + 1)) ∉ L i0 ∨ (⟨w, hn⟩ : Fin (n + 1)) = p := of_decide_eq_true e1
+        have e4 : ¬ ((⟨w, hn⟩ : Fin (n + 1)) ∉ L i0) := of_decide_eq_false e2
+        have e5 : (⟨w, hn⟩ : Fin (n + 1)) = p := e3.resolve_left e4
+        have e6 : value ⟨gates, 0⟩ (l p) ((⟨w, hn⟩ : Fin (n + 1)) : ℕ) = l p ⟨w, hn⟩ :=
+          input_value ⟨gates, 0⟩ (l p) ⟨w, hn⟩
+        exact e6.trans (decide_eq_true e5)
+      by_cases hw : w < n + 1 + gates.length
+      · have hk : w - (n + 1) < gates.length := by omega
+        have hwk : w = n + 1 + (w - (n + 1)) := by omega
+        rw [hwk] at h1 h2
+        rcases (hg _ (List.getElem_mem hk)).1 with hop | hop
+        · have hx : ∃ r ∈ gates[w - (n + 1)].inputs, r < n + 1 + (w - (n + 1)) ∧
+              value ⟨gates, 0⟩ y r = false := by
+            by_contra hcon
+            have hall : ∀ r ∈ gates[w - (n + 1)].inputs, r < n + 1 + (w - (n + 1)) ∧
+                value ⟨gates, 0⟩ y r = true := by
+              intro r hr
+              have hlt := ((and_value (n := n + 1) ⟨gates, 0⟩ (w - (n + 1)) hk hop (yp p)).mp h1 r hr).1
+              refine ⟨hlt, ?_⟩
+              by_contra hne
+              exact hcon ⟨r, hr, hlt, by simpa using hne⟩
+            have h3 := (and_value (n := n + 1) ⟨gates, 0⟩ (w - (n + 1)) hk hop y).mpr hall
+            exact Bool.noConfusion (h2.symm.trans h3)
+          have e : ch ⟨w - (n + 1), hk⟩ = Classical.choose hx := dite_eq_left hx
+          obtain ⟨hr, hlt, hry⟩ := Classical.choose_spec hx
+          have hmem : Classical.choose hx ∈ F := by
+            rw [← e]
+            exact Finset.mem_insert_of_mem (Finset.mem_image.mpr
+              ⟨⟨w - (n + 1), hk⟩, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hop⟩, rfl⟩)
+          have hv := ((and_value (n := n + 1) ⟨gates, 0⟩ (w - (n + 1)) hk hop (yp p)).mp h1 _ hr).2
+          rcases ih _ (by omega) hv hry with h | h
+          · exact Or.inr ⟨_, hmem, h⟩
+          · exact Or.inr h
+        · obtain ⟨r, hr, hlt, hv⟩ := (or_value (n := n + 1) ⟨gates, 0⟩ (w - (n + 1)) hk hop (yp p)).mp h1
+          have hry : value ⟨gates, 0⟩ y r = false := by
+            by_contra hne
+            have h3 := (or_value (n := n + 1) ⟨gates, 0⟩ (w - (n + 1)) hk hop y).mpr
+              ⟨r, hr, hlt, by simpa using hne⟩
+            exact Bool.noConfusion (h2.symm.trans h3)
+          rcases ih r (by omega) hv hry with h | h
+          · left
+            rw [hwk]
+            exact (or_value (n := n + 1) ⟨gates, 0⟩ (w - (n + 1)) hk hop (l p)).mpr ⟨r, hr, hlt, h⟩
+          · exact Or.inr h
+      · have h3 := missing_value (n := n + 1) ⟨gates, 0⟩ (yp p) w (by
+          change n + 1 + gates.length ≤ w
+          omega)
+        exact Bool.noConfusion (h3.symm.trans h1)
+  have hcover : ∀ p ∈ L i0, ∃ w ∈ F, Sv ⟨gates, 0⟩ l y p w := by
+    intro p hp
+    by_cases hpT : p ∈ T0
+    · refine ⟨o i0, Finset.mem_insert_self _ _, ?_, hfalse i0⟩
+      have h := hev i0 (l p) (Or.inl ⟨p, hpT, decide_eq_true rfl⟩)
+      have h2 : decide (∃ v ∈ L i0, l p v = true) = true :=
+        decide_eq_true ⟨p, hp, decide_eq_true rfl⟩
+      rw [h2] at h
+      exact h
+    · have h := hev i0 (yp p) (Or.inr fun v hv => decide_eq_true (Or.inl hv))
+      have h2 : decide (∃ v ∈ L i0, yp p v = true) = true :=
+        decide_eq_true ⟨p, hp, decide_eq_true (Or.inr rfl)⟩
+      rw [h2] at h
+      rcases key p (o i0) h (hfalse i0) with h3 | ⟨d, hd, h3⟩
+      · exact ⟨o i0, Finset.mem_insert_self _ _, h3, hfalse i0⟩
+      · exact ⟨d, hd, h3, hFy d hd⟩
   let K0 : Finset (Fin gates.length) := Finset.univ.filter fun g =>
-    Multi ⟨gates, 0⟩ T0 l y (n + 1 + (g : ℕ)) ∧ gates[(g : ℕ)].op = GateOp.or
-  have h0 := family (n := n + 1) gates hg T0 l y (o i0)
-    (fun a ha => ⟨by
-        have h := hev i0 (l a) (Or.inl ⟨a, ha, decide_eq_true rfl⟩)
-        have h2 : decide (∃ v ∈ L i0, l a v = true) = true :=
-          decide_eq_true ⟨a, hT ha, decide_eq_true rfl⟩
-        rw [h2] at h
-        exact h, hfalse i0⟩)
-    (fun w hw hc => by
-      obtain ⟨p, _, p', _, hne, hs1, hs2⟩ := hc
+    Multi ⟨gates, 0⟩ (L i0) l y (n + 1 + (g : ℕ)) ∧ gates[(g : ℕ)].op = GateOp.or
+  let W : Finset ℕ := Finset.image (fun g : Fin gates.length => n + 1 + (g : ℕ)) K0
+  have hlen : ∀ w, Multi ⟨gates, 0⟩ (L i0) l y w → n + 1 ≤ w ∧ w < n + 1 + gates.length := by
+    intro w hc
+    refine ⟨Nat.le_of_not_lt fun hw => ?_, ?_⟩
+    · obtain ⟨p, _, p', _, hne, hs1, hs2⟩ := hc
       have e1 : l p ⟨w, hw⟩ = true := (input_value ⟨gates, 0⟩ (l p) ⟨w, hw⟩).symm.trans hs1.1
       have e2 : l p' ⟨w, hw⟩ = true := (input_value ⟨gates, 0⟩ (l p') ⟨w, hw⟩).symm.trans hs2.1
-      exact hne ((of_decide_eq_true e1).symm.trans (of_decide_eq_true e2)))
-    K0 (fun g hmu hop _ _ => Finset.mem_filter.mpr ⟨Finset.mem_univ g, hmu, hop⟩)
+      exact hne ((of_decide_eq_true e1).symm.trans (of_decide_eq_true e2))
+    · by_contra hge
+      obtain ⟨p, _, _, _, _, hsv, _⟩ := hc
+      have hm := missing_value (n := n + 1) ⟨gates, 0⟩ (l p) w (by
+        change n + 1 + gates.length ≤ w
+        omega)
+      exact Bool.noConfusion (hm.symm.trans hsv.1)
+  have h0 : (L i0).card ≤ F.card + (W.filter (· < n + 1 + gates.length)).card :=
+    frontier (n := n + 1) ⟨gates, 0⟩ (L i0) l y hg W
+      (fun k hk hm hop _ _ => Finset.mem_image.mpr ⟨(⟨k, hk⟩ : Fin gates.length),
+        Finset.mem_filter.mpr ⟨Finset.mem_univ _, hm, hop⟩, rfl⟩)
+      hlen (n + 1 + gates.length) F
+      (fun w _ hc => (hlen w hc).2) (L i0) (Finset.Subset.refl _) hcover
+  have hW1 := Finset.card_filter_le W (· < n + 1 + gates.length)
+  have hW2 : W.card ≤ K0.card := Finset.card_image_le
   let U : Finset (Fin gates.length) := Finset.univ.biUnion K
   have hU : n * q ≤ U.card := count K hKq hKd
   have hd0 : Disjoint K0 U := by
@@ -840,7 +779,7 @@ theorem andcase (q n : ℕ) (L : Fin (n + 1) → Finset (Fin (n + 1))) (i0 : Fin
         by_contra h
         exact hcon (Or.inr h)
       exact hab (Finset.card_le_one.mp (hinter _ i0 (hsne i)).le a
-        (Finset.mem_inter.mpr ⟨hca, hT ha⟩) b (Finset.mem_inter.mpr ⟨hcb, hT hb⟩))
+        (Finset.mem_inter.mpr ⟨hca, ha⟩) b (Finset.mem_inter.mpr ⟨hcb, hb⟩))
     have h2 : value ⟨gates, 0⟩ (coY (fun i => L (i0.succAbove i)) i) (n + 1 + (g : ℕ)) = true := by
       rcases hnot with hn | hn
       · exact mono ⟨gates, 0⟩ hg (l a) _ (fun v hv => by
@@ -852,45 +791,36 @@ theorem andcase (q n : ℕ) (L : Fin (n + 1) → Finset (Fin (n + 1))) (i0 : Fin
           rw [hvb]
           exact decide_eq_true hn) _ hsb.1
     exact Bool.noConfusion (h1.symm.trans h2)
-  have hmU : m ∉ U := by
-    intro hmem
-    obtain ⟨i, _, hi⟩ := Finset.mem_biUnion.mp hmem
-    have h1 := (hKp i _ hi).1
-    cases h1.symm.trans hm
-  have hm0 : m ∉ K0 := by
-    intro hmem
-    have h1 := (Finset.mem_filter.mp hmem).2.2
-    cases h1.symm.trans hm
+  have hdA : Disjoint A (K0 ∪ U) := by
+    refine Finset.disjoint_left.mpr fun g hgA hgKU => ?_
+    have hand : gates[(g : ℕ)].op = GateOp.and := (Finset.mem_filter.mp hgA).2
+    rcases Finset.mem_union.mp hgKU with h | h
+    · have h1 := (Finset.mem_filter.mp h).2.2
+      cases h1.symm.trans hand
+    · obtain ⟨i, _, hi⟩ := Finset.mem_biUnion.mp h
+      have h1 := (hKp i _ hi).1
+      cases h1.symm.trans hand
   have c1 : (K0 ∪ U).card = K0.card + U.card := Finset.card_union_of_disjoint hd0
-  have c2 : (insert m (K0 ∪ U)).card = (K0 ∪ U).card + 1 :=
-    Finset.card_insert_of_notMem (fun h => (Finset.mem_union.mp h).elim hm0 hmU)
-  have hle := Finset.card_le_univ (insert m (K0 ∪ U))
+  have c2 : (A ∪ (K0 ∪ U)).card = A.card + (K0 ∪ U).card := Finset.card_union_of_disjoint hdA
+  have hle := Finset.card_le_univ (A ∪ (K0 ∪ U))
   rw [Fintype.card_fin] at hle
   have e : (n + 1) * q = n * q + q := by ring
+  have hc0 := hcard i0
   omega
 
-lemma core : ∀ (q N : ℕ) (L : Fin N → Finset (Fin N)) (i0 : Fin N) (T0 : Finset (Fin N)),
-    2 ≤ q → N = q ^ 2 + q + 1 → (∀ i : Fin N, (L i).card = q + 1) → (∀ i j : Fin N, i ≠ j → (L i ∩ L j).card = 1) →
+lemma coreFin1590 : ∀ (q m N : ℕ) (L : Fin N → Finset (Fin N)) (i0 : Fin N) (T0 : Finset (Fin N)),
+    3 ≤ q → 3 ≤ m → m ≤ q → N = q ^ 2 + q + 1 → (∀ i : Fin N, (L i).card = q + 1) → (∀ i j : Fin N, i ≠ j → (L i ∩ L j).card = 1) →
     (∀ p p' : Fin N, p ≠ p' → ∃ i : Fin N, p ∈ L i ∧ p' ∈ L i) →
-    3 ≤ q → T0 ⊆ L i0 → T0.card = 3 →
+    T0 ⊆ L i0 → T0.card = m →
     ∀ (gates : List PEqualNP.CircuitLowerBounds.Gate) (o : Fin N → ℕ),
     (∀ g ∈ gates, (g.op = PEqualNP.CircuitLowerBounds.GateOp.and ∨ g.op = PEqualNP.CircuitLowerBounds.GateOp.or) ∧ g.inputs.length ≤ 2) →
-    (∀ (t : Fin N) (x : Fin N → Bool), ((∃ v ∈ T0, x v = true) ∨ ∃ s : Fin N, ∀ v : Fin N, x v = false → v ∈ L s) →
+    (∀ (t : Fin N) (x : Fin N → Bool), ((∃ v ∈ T0, x v = true) ∨ ∀ v : Fin N, v ∉ L i0 → x v = true) →
       PEqualNP.CircuitLowerBounds.Circuit.eval ⟨gates, o t⟩ (List.ofFn x) = decide (∃ v ∈ L t, x v = true)) →
     N * q ≤ gates.length := by
-  intro q N L i0 T0 h2 hN hcard hinter hpts hq hT hTc gates o hg hev
-  classical
-  by_cases hA : ∃ m : Fin gates.length, gates[(m : ℕ)].op = PEqualNP.CircuitLowerBounds.GateOp.and
-  · obtain ⟨m, hm⟩ := hA
-    rcases N with _ | n
-    · exact i0.elim0
-    · exact PEqualNP.Outside.L_meta_1591.andcase q n L i0 T0 hcard hinter hq hT hTc gates o hg hev m hm
-  · refine PEqualNP.Outside.L_meta_1591.orcase q N L i0 T0 h2 hN hcard hinter hpts hq hT hTc gates o
-      (fun g hgm => ⟨?_, (hg g hgm).2⟩) hev
-    rcases (hg g hgm).1 with h | h
-    · obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.mp hgm
-      exact absurd ⟨⟨i, hi⟩, h⟩ hA
-    · exact h
+  intro q m N L i0 T0 hq hm _ _ hcard hinter _ hT hTc gates o hg hev
+  rcases N with _ | n
+  · exact i0.elim0
+  · exact PEqualNP.Outside.L_meta_1591.core q n L i0 T0 hcard hinter hq hT (by omega) gates o hg hev
 
 def brun (gs : List Gate) (x : List Bool) : List Bool :=
   gs.foldl (fun w g => w ++ [g.op.eval (g.inputs.map fun i => w.getD i false)]) x
@@ -1678,9 +1608,9 @@ lemma dmain : ∀ (n m : ℕ) (gates : List PEqualNP.CircuitLowerBounds.Gate) (o
         exact a3.2
 
 lemma m53 : ∀ (q N : ℕ) (L : Fin N → Finset (Fin N)) (i0 : Fin N) (T0 : Finset (Fin N)),
-    2 ≤ q → N = q ^ 2 + q + 1 → (∀ i : Fin N, (L i).card = q + 1) → (∀ i j : Fin N, i ≠ j → (L i ∩ L j).card = 1) →
+    3 ≤ q → N = q ^ 2 + q + 1 → (∀ i : Fin N, (L i).card = q + 1) → (∀ i j : Fin N, i ≠ j → (L i ∩ L j).card = 1) →
     (∀ p p' : Fin N, p ≠ p' → ∃ i : Fin N, p ∈ L i ∧ p' ∈ L i) →
-    3 ≤ q → T0 ⊆ L i0 → T0.card = 3 →
+    T0 ⊆ L i0 → T0.card = 3 →
     ∀ (gates : List PEqualNP.CircuitLowerBounds.Gate) (o : Fin N → ℕ) (j h : Fin gates.length),
     (∀ g ∈ gates, (g.op = PEqualNP.CircuitLowerBounds.GateOp.and ∨ g.op = PEqualNP.CircuitLowerBounds.GateOp.or ∨ g.op = PEqualNP.CircuitLowerBounds.GateOp.not) ∧
       g.inputs.length ≤ 2) →
@@ -1691,7 +1621,7 @@ lemma m53 : ∀ (q N : ℕ) (L : Fin N → Finset (Fin N)) (i0 : Fin N) (T0 : Fi
     PEqualNP.CircuitLowerBounds.Circuit.eval ⟨gates, N + (h : ℕ)⟩ (List.ofFn (fun v : Fin N => decide (v ∉ L i0))) = true →
     (∀ a ∈ T0, PEqualNP.CircuitLowerBounds.Circuit.eval ⟨gates, N + (h : ℕ)⟩ (List.ofFn (fun v : Fin N => decide (v = a))) = true) →
     N * q + (Finset.univ.filter (fun i : Fin gates.length => j < i ∧ N + (j : ℕ) ∈ (gates.get i).inputs)).card + 2 ≤ gates.length := by
-  intro q N L i0 T0 hq2 hN hcard hint hjoin hq3 hT0 hT0c gates o j h hg hjop hone hhj hjin hout hco hpts
+  intro q N L i0 T0 hq3 hN hcard hint hjoin hT0 hT0c gates o j h hg hjop hone hhj hjin hout hco hpts
   classical
   have hoff : ∀ t : Fin N, t ≠ i0 → ∃ a ∈ T0, a ∉ L t := by
     intro t ht
@@ -1732,32 +1662,21 @@ lemma m53 : ∀ (q N : ℕ) (L : Fin N → Finset (Fin N)) (i0 : Fin N) (T0 : Fi
       rintro ⟨v, hv, hh⟩
       rw [hy2 v hv] at hh
       exact Bool.false_ne_true hh)
-  have key := core q N L i0 T0 hq2 hN hcard hint hjoin hq3 hT0 hT0c gates' out' hg' (fun t x hx => (hagree t x (by
-    rcases hx with ⟨a, ha, hxa⟩ | ⟨s, hs⟩
+  have key := coreFin1590 q 3 N L i0 T0 hq3 (le_refl 3) hq3 hN hcard hint hjoin hT0 hT0c gates' out' hg' (fun t x hx => (hagree t x (by
+    rcases hx with ⟨a, ha, hxa⟩ | hs
     · refine hmono N gates j hg hone (fun v : Fin N => decide (v = a)) x (fun v hv => ?_) _ hlt (hpts a ha)
       rw [of_decide_eq_true hv]
       exact hxa
-    · by_cases hs0 : s = i0
-      · refine hmono N gates j hg hone (fun v : Fin N => decide (v ∉ L i0)) x (fun v hv => ?_) _ hlt hco
-        by_contra hf
-        have hvs := hs v ((Bool.not_eq_true _).mp hf)
-        rw [hs0] at hvs
-        exact (of_decide_eq_true hv) hvs
-      · obtain ⟨a, ha, hat⟩ := hoff s hs0
-        have hxa : x a = true := by
-          by_contra hf
-          exact hat (hs a ((Bool.not_eq_true _).mp hf))
-        refine hmono N gates j hg hone (fun v : Fin N => decide (v = a)) x (fun v hv => ?_) _ hlt (hpts a ha)
-        rw [of_decide_eq_true hv]
-        exact hxa)).trans (hout t x))
+    · refine hmono N gates j hg hone (fun v : Fin N => decide (v ∉ L i0)) x (fun v hv => ?_) _ hlt hco
+      exact hs v (of_decide_eq_true hv))).trans (hout t x))
   omega
 
 end PEqualNP.Outside.L_meta_1591
 
 theorem PEqualNP.Outside.L_meta_1591 : ∀ (q N : ℕ) (L : Fin N → Finset (Fin N)) (i0 : Fin N) (T0 : Finset (Fin N)),
-    2 ≤ q → N = q ^ 2 + q + 1 → (∀ i : Fin N, (L i).card = q + 1) → (∀ i j : Fin N, i ≠ j → (L i ∩ L j).card = 1) →
+    3 ≤ q → N = q ^ 2 + q + 1 → (∀ i : Fin N, (L i).card = q + 1) → (∀ i j : Fin N, i ≠ j → (L i ∩ L j).card = 1) →
     (∀ p p' : Fin N, p ≠ p' → ∃ i : Fin N, p ∈ L i ∧ p' ∈ L i) →
-    3 ≤ q → T0 ⊆ L i0 → T0.card = 3 →
+    T0 ⊆ L i0 → T0.card = 3 →
     ∀ (gates : List PEqualNP.CircuitLowerBounds.Gate) (o : Fin N → ℕ) (j h : Fin gates.length),
     (∀ g ∈ gates, (g.op = PEqualNP.CircuitLowerBounds.GateOp.and ∨ g.op = PEqualNP.CircuitLowerBounds.GateOp.or ∨ g.op = PEqualNP.CircuitLowerBounds.GateOp.not) ∧
       g.inputs.length ≤ 2) →
