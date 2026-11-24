@@ -69,3 +69,17 @@ POST /desk/release?lease=<id>&reason=statement_seems_false
 - Full Lean refute `¬∃ C, … size ≤ 63 …` (same difficulty band as 972).
 - Exhaustive synthesis over all size-63 circuits (infeasible); conclusion
   is search + matching bound, not a machine-checked nonexistence proof.
+
+## Additional parallel searches (same verdict)
+
+All reported no ≤63 witness:
+
+- `search_collinear63.py` — OR4-only / omit-point size-63 constructions fail soundness or completeness
+- `search_genetic63.py` — 157k trials, best still size 64
+- `search_merge63.py` — no equivalent AND-wire pairs to bypass
+- `search_share63.py` — CSE for all OR4 pencils stuck at cost 39 (= q·n)
+- `search_noncover63.py` — non-cover templates; random best still incomplete
+- `search_local5.py` — exhaustive ≤3-gate for single-line contrib: none below 4
+- `ilp_or4.py` / `z3_size63.py` — solver attempts (pulp API mismatch / long Z3)
+
+See also `scratch/EVIDENCE.md`.
