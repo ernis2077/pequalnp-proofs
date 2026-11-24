@@ -2102,7 +2102,8 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
           omega
         have hbound := level_bound (n := n) (t := t) G C hC4 hmono hfun hEx hMin hedge
           h5 hshape' hused' hlive' hout'
-        exact hlt_goal hbound
+        have hbound' : G.edgeSet.ncard + t ≤ s + 1 := by simpa [hCsize] using hbound
+        exact hlt_goal hbound'
       · have hbpos : 0 < b := by omega
         have hP : hasBad C n b := by
           unfold badMax at hb
@@ -2132,8 +2133,9 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
               Elim.elim_absorb_false G C hmono hfun hedge i0 hi0nd habs_i
             exact hnot_smaller C' hm' (by rw [← hCsize]; exact hsz') heq'
           · -- Both outer AND b and nested AND i0 are live on some edge.
-            -- Remaining case for the count proof: need a size- or badMax-reducing rewrite
-            -- when two nested ANDs are each live on an edge (C4-free).
+            -- Need a size- or badMax-reducing rewrite under C4-freeness (direct nest:
+            -- outer AND reads nested primary-AND of an edge plus another primary → copy;
+            -- or OR-path nest → absorb). Unfinished: close via elim_smaller / ihb.
             push Not at habs habs_i
             obtain ⟨uE, vE, huvE, hliveE⟩ := habs
             obtain ⟨uI, vI, huvI, hliveI⟩ := habs_i
@@ -2145,12 +2147,13 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
               cases h : (C.wires (List.ofFn (fun t : Fin n => decide (t = uI ∨ t = vI)))).getD (n + i0) false with
               | false => exact absurd h hliveI
               | true => rfl
-            -- Keep hypotheses alive for the unfinished live-nested case.
             have := htrueb
             have := htruei
             have := hi0lt
             have := huvE
             have := huvI
+            have := htg
+            have := ihb
             exact hlt_goal (by omega)
 
 end PEqualNP.Outside.L_meta_612.Count
