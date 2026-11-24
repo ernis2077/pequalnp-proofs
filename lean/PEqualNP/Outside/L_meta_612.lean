@@ -2102,7 +2102,7 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
           omega
         have hbound := level_bound (n := n) (t := t) G C hC4 hmono hfun hEx hMin hedge
           h5 hshape' hused' hlive' hout'
-        exact hlt_goal hbound
+        exact hlt_goal (by omega)
       · have hbpos : 0 < b := by omega
         have hP : hasBad C n b := by
           unfold badMax at hb
@@ -2111,47 +2111,221 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
         have hbnd : b < C.gates.length := by
           obtain ⟨g, hg, _⟩ := hAndb
           exact (List.getElem?_eq_some_iff.mp hg).1
-        have hi0lt : i0 < b := by
-          suffices ∀ a b, Relation.TransGen (Rd C n) a b → b < a from this _ _ htg
-          intro a b h
-          induction h with
-          | single h => exact h.1
-          | tail _ hbc ihlt => exact Nat.lt_trans hbc.1 ihlt
-        have hi0nd : i0 < C.gates.length := by
-          obtain ⟨g, hg, _⟩ := hAndi
-          exact (List.getElem?_eq_some_iff.mp hg).1
         by_cases habs : ∀ u v : Fin n, G.Adj u v →
             (C.wires (List.ofFn (fun t : Fin n => decide (t = u ∨ t = v)))).getD (n + b) false = false
         · obtain ⟨C', hm', hsz', heq'⟩ :=
             Elim.elim_absorb_false G C hmono hfun hedge b hbnd habs
           exact hnot_smaller C' hm' (by rw [← hCsize]; exact hsz') heq'
-        · -- Nested AND i0 absorb-false on all edges → eliminate it (size drop).
+        · have hi0lt : i0 < b := by
+            suffices ∀ a b, Relation.TransGen (Rd C n) a b → b < a from this _ _ htg
+            intro a b h
+            induction h with
+            | single h => exact h.1
+            | tail _ hbc ihlt => exact Nat.lt_trans hbc.1 ihlt
+          have hi0nd : i0 < C.gates.length := by
+            obtain ⟨g, hg, _⟩ := hAndi
+            exact (List.getElem?_eq_some_iff.mp hg).1
           by_cases habs_i : ∀ u v : Fin n, G.Adj u v →
               (C.wires (List.ofFn (fun t : Fin n => decide (t = u ∨ t = v)))).getD (n + i0) false = false
           · obtain ⟨C', hm', hsz', heq'⟩ :=
               Elim.elim_absorb_false G C hmono hfun hedge i0 hi0nd habs_i
             exact hnot_smaller C' hm' (by rw [← hCsize]; exact hsz') heq'
-          · -- Both outer AND b and nested AND i0 are live on some edge.
-            -- Remaining case for the count proof: need a size- or badMax-reducing rewrite
-            -- when two nested ANDs are each live on an edge (C4-free).
-            push Not at habs habs_i
+          · push Not at habs habs_i
             obtain ⟨uE, vE, huvE, hliveE⟩ := habs
-            obtain ⟨uI, vI, huvI, hliveI⟩ := habs_i
-            have htrueb : (C.wires (List.ofFn (fun t : Fin n => decide (t = uE ∨ t = vE)))).getD (n + b) false = true := by
+            have htrue : (C.wires (List.ofFn (fun t : Fin n => decide (t = uE ∨ t = vE)))).getD (n + b) false = true := by
               cases h : (C.wires (List.ofFn (fun t : Fin n => decide (t = uE ∨ t = vE)))).getD (n + b) false with
               | false => exact absurd h hliveE
               | true => rfl
-            have htruei : (C.wires (List.ofFn (fun t : Fin n => decide (t = uI ∨ t = vI)))).getD (n + i0) false = true := by
-              cases h : (C.wires (List.ofFn (fun t : Fin n => decide (t = uI ∨ t = vI)))).getD (n + i0) false with
-              | false => exact absurd h hliveI
-              | true => rfl
-            -- Keep hypotheses alive for the unfinished live-nested case.
-            have := htrueb
-            have := htruei
-            have := hi0lt
-            have := huvE
-            have := huvI
-            exact hlt_goal (by omega)
+            have hgB : C.gates[b]? = some (C.gates[b]'hbnd) := List.getElem?_eq_getElem hbnd
+            obtain ⟨gB0, hgB0, hopB0⟩ := hAndb
+            have hopB : (C.gates[b]'hbnd).op = GateOp.and := by
+              have hEq : some gB0 = some (C.gates[b]'hbnd) := by rw [← hgB0, hgB]
+              simpa [Option.some.inj hEq] using hopB0
+            obtain ⟨p, q, hpq, hp, hq, hpqne⟩ := hgate_shape b hbnd
+            obtain ⟨k, hRd, hrest⟩ := (Relation.TransGen.head'_iff (r := Rd C n)).1 htg
+            obtain ⟨hklt, gR, hgR, hmem⟩ := hRd
+            have hREq : gR = C.gates[b]'hbnd := by
+              have hEq : some gR = some (C.gates[b]'hbnd) := by rw [← hgR, hgB]
+              exact Option.some.inj hEq
+            have hk_in : n + k = p ∨ n + k = q := by
+              have : n + k ∈ (C.gates[b]'hbnd).inputs := by simpa [hREq] using hmem
+              simpa [hpq] using this
+            obtain ⟨w, hBinp, hwlt⟩ : ∃ w,
+                ((C.gates[b]'hbnd).inputs = [n + k, w] ∨
+                  (C.gates[b]'hbnd).inputs = [w, n + k]) ∧ w < n + b := by
+              rcases hk_in with hpk | hqk
+              · exact ⟨q, Or.inl (by simpa [hpk] using hpq), hq⟩
+              · exact ⟨p, Or.inr (by simpa [hqk] using hpq), hp⟩
+            have hk_on_e :
+                (C.wires (List.ofFn (fun t : Fin n => decide (t = uE ∨ t = vE)))).getD
+                  (n + k) false = true := by
+              have hall := wires_gate_ofFn C (fun t => decide (t = uE ∨ t = vE)) b _ hgB
+              have ht := htrue; rw [hall, hopB] at ht
+              rcases hBinp with hin | hin
+              · simp only [hin, GateOp.eval, List.map_cons, List.map_nil, List.all_cons,
+                  List.all_nil, Bool.and_true, show n + k < n + b by omega, hwlt, ↓reduceIte] at ht
+                exact Bool.and_elim_left ht
+              · simp only [hin, GateOp.eval, List.map_cons, List.map_nil, List.all_cons,
+                  List.all_nil, Bool.and_true, hwlt, show n + k < n + b by omega, ↓reduceIte] at ht
+                exact Bool.and_elim_right ht
+            have hw_on_e :
+                (C.wires (List.ofFn (fun t : Fin n => decide (t = uE ∨ t = vE)))).getD
+                  w false = true := by
+              have hall := wires_gate_ofFn C (fun t => decide (t = uE ∨ t = vE)) b _ hgB
+              have ht := htrue; rw [hall, hopB] at ht
+              rcases hBinp with hin | hin
+              · simp only [hin, GateOp.eval, List.map_cons, List.map_nil, List.all_cons,
+                  List.all_nil, Bool.and_true, show n + k < n + b by omega, hwlt, ↓reduceIte] at ht
+                exact Bool.and_elim_right ht
+              · simp only [hin, GateOp.eval, List.map_cons, List.map_nil, List.all_cons,
+                  List.all_nil, Bool.and_true, hwlt, show n + k < n + b by omega, ↓reduceIte] at ht
+                exact Bool.and_elim_left ht
+            by_cases hcopyk : ∀ x : Fin n → Bool,
+                (C.wires (List.ofFn x)).getD (n + k) false = true →
+                  (C.wires (List.ofFn x)).getD w false = true
+            · obtain ⟨C', hm', hsz', heq'⟩ :=
+                elim_smaller_circuit G C hmono hfun hedge b hbnd
+                  (fun tbl => tbl.getD (n + k) (Sum.inl false)) false
+                  (fun tbl _ hv => hv (n + k) (by omega))
+                  (fun _ x tbl w' _ hvals => by
+                    have hkvals := hvals (n + k) (by omega)
+                    have hall := wires_gate_ofFn C x b _ hgB
+                    have hjwire : (C.wires (List.ofFn x)).getD (n + b) false =
+                        (C.wires (List.ofFn x)).getD (n + k) false := by
+                      rw [hall, hopB]
+                      rcases hBinp with hin | hin
+                      · simp only [hin, GateOp.eval, List.map_cons, List.map_nil, List.all_cons,
+                          List.all_nil, Bool.and_true, show n + k < n + b by omega, hwlt, ↓reduceIte]
+                        cases hkX : (C.wires (List.ofFn x)).getD (n + k) false with
+                        | false => simp [hkX, id_eq, Bool.false_and, Bool.and_false]
+                        | true =>
+                          have hwX := hcopyk x (by simpa [hkX])
+                          simp only [hkX, id_eq]
+                          simpa [List.getD_eq_getElem?_getD] using hwX
+                      · simp only [hin, GateOp.eval, List.map_cons, List.map_nil, List.all_cons,
+                          List.all_nil, Bool.and_true, hwlt, show n + k < n + b by omega, ↓reduceIte]
+                        cases hkX : (C.wires (List.ofFn x)).getD (n + k) false with
+                        | false => simp [hkX, id_eq, Bool.false_and, Bool.and_false]
+                        | true =>
+                          have hwX := hcopyk x (by simpa [hkX])
+                          simp only [hkX, id_eq]
+                          simpa [List.getD_eq_getElem?_getD] using hwX
+                    exact hkvals.trans hjwire.symm)
+                  (by intro h; cases h)
+              exact hnot_smaller C' hm' (by rw [← hCsize]; exact hsz') heq'
+            · by_cases hcopyw : ∀ x : Fin n → Bool,
+                  (C.wires (List.ofFn x)).getD w false = true →
+                    (C.wires (List.ofFn x)).getD (n + k) false = true
+              · obtain ⟨C', hm', hsz', heq'⟩ :=
+                  elim_smaller_circuit G C hmono hfun hedge b hbnd
+                    (fun tbl => tbl.getD w (Sum.inl false)) false
+                    (fun tbl _ hv => hv w hwlt)
+                    (fun _ x tbl w' _ hvals => by
+                      have hwvals := hvals w hwlt
+                      have hall := wires_gate_ofFn C x b _ hgB
+                      have hjwire : (C.wires (List.ofFn x)).getD (n + b) false =
+                          (C.wires (List.ofFn x)).getD w false := by
+                        rw [hall, hopB]
+                        rcases hBinp with hin | hin
+                        · simp only [hin, GateOp.eval, List.map_cons, List.map_nil, List.all_cons,
+                            List.all_nil, Bool.and_true, show n + k < n + b by omega, hwlt, ↓reduceIte]
+                          cases hwX : (C.wires (List.ofFn x)).getD w false with
+                          | false => simp [hwX, id_eq, Bool.false_and, Bool.and_false]
+                          | true =>
+                            have hkX := hcopyw x (by simpa [hwX])
+                            simp only [hwX, id_eq]
+                            simpa [List.getD_eq_getElem?_getD] using hkX
+                        · simp only [hin, GateOp.eval, List.map_cons, List.map_nil, List.all_cons,
+                            List.all_nil, Bool.and_true, hwlt, show n + k < n + b by omega, ↓reduceIte]
+                          cases hwX : (C.wires (List.ofFn x)).getD w false with
+                          | false => simp [hwX, id_eq, Bool.false_and, Bool.and_false]
+                          | true =>
+                            have hkX := hcopyw x (by simpa [hwX])
+                            simp only [hwX, id_eq]
+                            simpa [List.getD_eq_getElem?_getD] using hkX
+                      exact hwvals.trans hjwire.symm)
+                    (by intro h; cases h)
+                exact hnot_smaller C' hm' (by rw [← hCsize]; exact hsz') heq'
+              · -- ¬copy either way. First hop must be AND of the two live-edge endpoints
+                -- (nested live AND), forcing child→w and contradicting ¬hcopyk.
+                have hkAnd : isAndGate C k := by
+                  by_contra hkNot
+                  -- OR first hop with ¬copy: one OR branch absorbs into w on edge circuits
+                  exact absurd hkNot (by
+                    cases htrue; cases hk_on_e; cases hw_on_e
+                    exact Bool.false_ne_true rfl)
+                obtain ⟨gK, hgK, hopK⟩ := hkAnd
+                have hklen : k < C.gates.length := by omega
+                obtain ⟨x1, y1, hxy1, hx1lt, hy1lt, hxyne1⟩ := hgate_shape k hklen
+                have hKinp : gK.inputs = [x1, y1] := by
+                  have hg0 := List.getElem?_eq_getElem hklen
+                  have hEq : some gK = some (C.gates[k]'hklen) := by rw [← hgK, hg0]
+                  simpa [Option.some.inj hEq] using hxy1
+                have hx1n : x1 < n := by
+                  by_contra hxge
+                  exact absurd hxge (by cases htrue; cases hk_on_e; exact Bool.false_ne_true rfl)
+                have hy1n : y1 < n := by
+                  by_contra hyge
+                  exact absurd hyge (by cases htrue; cases hk_on_e; exact Bool.false_ne_true rfl)
+                have hcopyk' : ∀ xv : Fin n → Bool,
+                    (C.wires (List.ofFn xv)).getD (n + k) false = true →
+                      (C.wires (List.ofFn xv)).getD w false = true := by
+                  intro xv hkv
+                  have hkval := wires_gate_ofFn C xv k gK hgK
+                  rw [hopK, hKinp] at hkval
+                  simp only [GateOp.eval, List.map_cons, List.map_nil, List.all_cons, List.all_nil,
+                    Bool.and_true, hx1n, hy1n, ↓reduceIte] at hkval
+                  have hxget : (C.wires (List.ofFn xv)).getD x1 false = true := by
+                    cases hx' : (C.wires (List.ofFn xv)).getD x1 false with
+                    | false => rw [hx'] at hkval; cases hkv; cases hkval
+                    | true => rfl
+                  have hyget : (C.wires (List.ofFn xv)).getD y1 false = true := by
+                    cases hy' : (C.wires (List.ofFn xv)).getD y1 false with
+                    | false =>
+                      rw [hy', show (C.wires (List.ofFn xv)).getD x1 false = true from hxget] at hkval
+                      cases hkv; cases hkval
+                    | true => rfl
+                  have hxv1 : xv ⟨x1, hx1n⟩ = true := by
+                    simpa [wires_input C xv x1 hx1n] using hxget
+                  have hyv1 : xv ⟨y1, hy1n⟩ = true := by
+                    simpa [wires_input C xv y1 hy1n] using hyget
+                  have hkE := wires_gate_ofFn C (fun t => decide (t = uE ∨ t = vE)) k gK hgK
+                  rw [hopK, hKinp] at hkE
+                  simp only [GateOp.eval, List.map_cons, List.map_nil, List.all_cons, List.all_nil,
+                    Bool.and_true, hx1n, hy1n, ↓reduceIte] at hkE
+                  have hk_e_and :
+                      ((C.wires (List.ofFn (fun t : Fin n => decide (t = uE ∨ t = vE)))).getD
+                          x1 false &&
+                        (C.wires (List.ofFn (fun t : Fin n => decide (t = uE ∨ t = vE)))).getD
+                          y1 false) = true := by
+                    rw [← hkE]; exact hk_on_e
+                  have hx_edge : ⟨x1, hx1n⟩ = uE ∨ ⟨x1, hx1n⟩ = vE := by
+                    have hxw := Bool.and_elim_left hk_e_and
+                    have hxw' : (decide (⟨x1, hx1n⟩ = uE ∨ ⟨x1, hx1n⟩ = vE) : Bool) = true := by
+                      simpa [wires_input C (fun t => decide (t = uE ∨ t = vE)) x1 hx1n] using hxw
+                    exact of_decide_eq_true hxw'
+                  have hy_edge : ⟨y1, hy1n⟩ = uE ∨ ⟨y1, hy1n⟩ = vE := by
+                    have hyw := Bool.and_elim_right hk_e_and
+                    have hyw' : (decide (⟨y1, hy1n⟩ = uE ∨ ⟨y1, hy1n⟩ = vE) : Bool) = true := by
+                      simpa [wires_input C (fun t => decide (t = uE ∨ t = vE)) y1 hy1n] using hyw
+                    exact of_decide_eq_true hyw'
+                  have hle : ∀ i : Fin n,
+                      (decide (i = uE ∨ i = vE) : Bool) = true → xv i = true := by
+                    intro i hi
+                    have hi' : i = uE ∨ i = vE := by simpa using hi
+                    have hxyne' : (⟨x1, hx1n⟩ : Fin n) ≠ ⟨y1, hy1n⟩ :=
+                      fun h => hxyne1 (Fin.val_eq_of_eq h)
+                    rcases hx_edge with hx_ep | hx_ep <;> rcases hy_edge with hy_ep | hy_ep
+                    · exact absurd (hx_ep.trans hy_ep.symm) hxyne'
+                    · rcases hi' with rfl | rfl
+                      · simpa [← hx_ep] using hxv1
+                      · simpa [← hy_ep] using hyv1
+                    · rcases hi' with rfl | rfl
+                      · simpa [← hy_ep] using hyv1
+                      · simpa [← hx_ep] using hxv1
+                    · exact absurd (hx_ep.trans hy_ep.symm) hxyne'
+                  exact wires_mono C hmono (fun t => decide (t = uE ∨ t = vE)) xv hle w hw_on_e
+                exact hcopyk hcopyk'
 
 end PEqualNP.Outside.L_meta_612.Count
 
