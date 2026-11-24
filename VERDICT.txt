@@ -1,0 +1,51 @@
+VERDICT: L-meta-2834
+Branch: cursor/l-meta-2834-49b5
+Disposition: exhausted (no green Lean proof; no PR per instructions)
+Lease: e72cf877-74c3-444d-959c-739810fe2249 — beat returned HTTP 410 (expired/unheld); not released (other leases held)
+
+## Statement (desk JSON)
+
+∀ x1 x2 : Fin 9, C,
+  x1 ≠ 0 → x1 ≠ 4 → x2 ≠ 0 → x2 ≠ 4 → x1 ≠ x2 →
+  FanInTwo C → C.size ≤ 13 →
+  (∀ x11 : Fin 9 → Bool,
+    C.eval (List.ofFn x11 ++ [x11 0 || x11 4, x11 x1 || x11 x2]) =
+      Petersen edge-OR on x11) →
+  False
+
+Equivalently: for each allowed pair (x1,x2), no fan-in-two circuit with at most 13 gates agrees with the Petersen-minus-a-vertex edge function when wires 9–10 are forced to OR(0,4) and OR(x1,x2) on every assignment.
+
+## Context (fleet cut)
+
+Step 3 of 4 toward L-meta-2151. Siblings: L-meta-2832, L-meta-2201, L-meta-2836. Module: `PEqualNP.Outside.L_meta_2834`, imports: `Mathlib`, `PEqualNP.Defs` only.
+
+## Work performed
+
+| Item | Result |
+|------|--------|
+| Branch `cursor/l-meta-2834-49b5` from `origin/main` | Done |
+| Checked prior art on main | No `L_meta_2834.lean`; no GitHub match for L-meta-2834 / L-meta-2832 / L-meta-2836 |
+| Close analogues | `L_meta_1912`, `L_meta_2024`, `L_meta_2183`, `L_meta_2317` — Petersen on Fin 9, size ~13–15, BitVec certificate + `decide +kernel` (7k+ lines each) |
+| SAT / random search | 50k random FanInTwo circuits (≤13 gates, 11 wires): 0 matches for (x1,x2)=(1,2); supports statement, not a proof |
+| Small exhaustive enum | Up to 3 gates (and/or/not): did not finish in time (wire choices blow up) |
+| `lake build PEqualNP.Outside.L_meta_2024` | Still running >5 min (expected for certificate modules) |
+
+## Why no green path
+
+1. **Proof style in repo** for “no size-≤13 circuit computes Petersen with forced aux wires” is a **checked computational certificate** (`Base1007` / `Main1672`-style BitVec 252 tagging, `Impossible`, `rootOk` tables), not a short structural lemma from `Defs` alone. Examples: `L_meta_1912` (~7250 lines), `L_meta_2024` (glue from `L-meta-1672`).
+
+2. **This gap adds parameters** (x1,x2) with 21 admissible pairs and **two** appended OR wires in `eval`, not the single-wire patterns in `L_meta_2024` (AND on 4,6) or `R_meta_1938` (final OR from pin list). Adapting the certificate generator and Lean verifier is a full search+formalization project, not a small patch.
+
+3. **No importable checked lemma** on main discharges the statement; reducers (`R_meta_2151_*`) assume sibling steps, not prove them.
+
+4. **Statement not refuted**: partial search found no satisfying circuit; no evidence for `statement_seems_false`.
+
+## What would complete the step
+
+1. External enumerator: for each (x1,x2) ∈ allowed pairs, certify ∀ FanInTwo C, size≤13, ∃ x11 with eval ≠ Petersen (or output `L_meta_2834`-shaped refutation rows).
+2. Port certificate format to Lean (same pipeline as PR 4290 / `L_meta_1912`), with `Fin 9` pair case split (`Fin_cases` / interval on val).
+3. `lake build PEqualNP.Outside.L_meta_2834` green, no `sorry`, file ≤512 KiB.
+
+## Outcome
+
+**No green path.** Recommended desk release when appropriate: `reason=exhausted` with SHA256 of search script once a complete enumerator is archived.
