@@ -131,6 +131,8 @@ lemma exclude_one_reader (C : Circuit) (pol : Bool)
     (_hfan : FanInTwo C) (_hsz : C.size ≤ 14)
     (_hone : (C.gates.filter (fun g => g.inputs.contains 0)).length = 1) :
     ∃ x : Fin 9 → Bool, circuitFun 9 C (present pol x) ≠ edgeF x := by
+  by_cases hout : C.output = 0
+  · exact exclude_output_zero C pol hout
   sorry
 
 theorem exclude (C : Circuit) (pol : Bool) (hfan : FanInTwo C) (hsz : C.size ≤ 14)

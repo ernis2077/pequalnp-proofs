@@ -1,51 +1,44 @@
-VERDICT: L-meta-2834
-Branch: cursor/l-meta-2834-49b5
-Disposition: exhausted (no green Lean proof; no PR per instructions)
-Lease: e72cf877-74c3-444d-959c-739810fe2249 — beat returned HTTP 410 (expired/unheld); not released (other leases held)
+VERDICT: BLOCKED (L-meta-2541)
 
-## Statement (desk JSON)
+Branch: cursor/l-meta-2541-49b5
+Disposition: missing_lemma (no PR; no green Lean proof)
 
-∀ x1 x2 : Fin 9, C,
-  x1 ≠ 0 → x1 ≠ 4 → x2 ≠ 0 → x2 ≠ 4 → x1 ≠ x2 →
-  FanInTwo C → C.size ≤ 13 →
-  (∀ x11 : Fin 9 → Bool,
-    C.eval (List.ofFn x11 ++ [x11 0 || x11 4, x11 x1 || x11 x2]) =
-      Petersen edge-OR on x11) →
-  False
+## Statement (desk)
 
-Equivalently: for each allowed pair (x1,x2), no fan-in-two circuit with at most 13 gates agrees with the Petersen-minus-a-vertex edge function when wires 9–10 are forced to OR(0,4) and OR(x1,x2) on every assignment.
+∀ FanInTwo circuit C on 9 wires, size ≤ 14, at most one gate lists wire 0 among its inputs,
+∀ polarity bit pol, ∃ assignment x such that
+`circuitFun 9 C (present pol x) ≠ edgeF x` (Petersen-minus vertex edge OR).
 
-## Context (fleet cut)
+## Green partial path
 
-Step 3 of 4 toward L-meta-2151. Siblings: L-meta-2832, L-meta-2201, L-meta-2836. Module: `PEqualNP.Outside.L_meta_2834`, imports: `Mathlib`, `PEqualNP.Defs` only.
+| Lemma | Status |
+|-------|--------|
+| `exclude_zero_readers` | proved: `edgeF` depends on vertex 0; witness pair `(0∨1)` / `{1}` + `circuitFun_ignore0` |
+| `exclude_output_zero` | proved: output wire 0 ⇒ `circuitFun = present pol x 0` vs `edgeF` |
+| `exclude` | proved modulo `exclude_one_reader` |
+| `exclude_one_reader` | **partial**: subcase `C.output = 0` discharged; main case open (`sorry`) |
+| `PEqualNP.Outside.L_meta_2541` | wrapper over `exclude` |
 
-## Work performed
+Build: `lake build PEqualNP.Outside.L_meta_2541` fails on `sorry` in `exclude_one_reader`.
 
-| Item | Result |
-|------|--------|
-| Branch `cursor/l-meta-2834-49b5` from `origin/main` | Done |
-| Checked prior art on main | No `L_meta_2834.lean`; no GitHub match for L-meta-2834 / L-meta-2832 / L-meta-2836 |
-| Close analogues | `L_meta_1912`, `L_meta_2024`, `L_meta_2183`, `L_meta_2317` — Petersen on Fin 9, size ~13–15, BitVec certificate + `decide +kernel` (7k+ lines each) |
-| SAT / random search | 50k random FanInTwo circuits (≤13 gates, 11 wires): 0 matches for (x1,x2)=(1,2); supports statement, not a proof |
-| Small exhaustive enum | Up to 3 gates (and/or/not): did not finish in time (wire choices blow up) |
-| `lake build PEqualNP.Outside.L_meta_2024` | Still running >5 min (expected for certificate modules) |
+## Blocker (exactly-one reader)
 
-## Why no green path
+Exactly one gate may read wire 0. Structural reductions attempted in-session:
 
-1. **Proof style in repo** for “no size-≤13 circuit computes Petersen with forced aux wires” is a **checked computational certificate** (`Base1007` / `Main1672`-style BitVec 252 tagging, `Impossible`, `rootOk` tables), not a short structural lemma from `Defs` alone. Examples: `L_meta_1912` (~7250 lines), `L_meta_2024` (glue from `L-meta-1672`).
+- **Dead reader** (reader wire not on path to output): reduces to zero-reader argument — needs a checked fan-in/reachability lemma on `Circuit.wires`.
+- **Output = reader wire** with `NOT(0)`: witness `(assign1, assign0)` by polarity — partial WIP did not stabilize in Lean.
+- **AND/OR reader at output**: finite candidate assignments do not close all cases without a global bound argument.
 
-2. **This gap adds parameters** (x1,x2) with 21 admissible pairs and **two** appended OR wires in `eval`, not the single-wire patterns in `L_meta_2024` (AND on 4,6) or `R_meta_1938` (final OR from pin list). Adapting the certificate generator and Lean verifier is a full search+formalization project, not a small patch.
+Empirical checks (Python, 200k+ random FanInTwo circuits, size ≤ 14, one reader): every sample admits a witness for each `pol`. Statement appears true; no counterexample.
 
-3. **No importable checked lemma** on main discharges the statement; reducers (`R_meta_2151_*`) assume sibling steps, not prove them.
+A repo-scale green proof mirrors sibling fleet steps (L-meta-1672 / L-meta-2042 / L-meta-2317 families): SAT or DP enumeration with `decide +kernel` certificates, or the paired desk step **L-meta-2539** (contraction) to reduce to a zero-reader bound.
 
-4. **Statement not refuted**: partial search found no satisfying circuit; no evidence for `statement_seems_false`.
+## Recommended next work
 
-## What would complete the step
-
-1. External enumerator: for each (x1,x2) ∈ allowed pairs, certify ∀ FanInTwo C, size≤13, ∃ x11 with eval ≠ Petersen (or output `L_meta_2834`-shaped refutation rows).
-2. Port certificate format to Lean (same pipeline as PR 4290 / `L_meta_1912`), with `Fin 9` pair case split (`Fin_cases` / interval on val).
-3. `lake build PEqualNP.Outside.L_meta_2834` green, no `sorry`, file ≤512 KiB.
+1. Checked certificate generator for “one reader + `present` polarity + size ≤ 14” vs fixed `edgeF`.
+2. Or prove L-meta-2539 contraction and fold into `exclude_one_reader`.
+3. Optional: finish small closed cases (NOT output, dead reader, input-wire output).
 
 ## Outcome
 
-**No green path.** Recommended desk release when appropriate: `reason=exhausted` with SHA256 of search script once a complete enumerator is archived.
+**No green path.** `exclude_one_reader` remains `sorry`. Do not open a PR.
