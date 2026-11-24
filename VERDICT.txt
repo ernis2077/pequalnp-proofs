@@ -1,26 +1,34 @@
-VERDICT: BLOCKED (L-meta-2541)
+VERDICT: BLOCKED (L-meta-2744)
 
 Status:
-- Branch: cursor/l-meta-2541-49b5
-- File: lean/PEqualNP/Outside/L_meta_2541.lean
+- Branch: cursor/l-meta-2744-49b5
+- Target file: lean/PEqualNP/Outside/L_meta_2744.lean (not created; no green proof)
+- Lease: f498324c-cd34-4f30-9803-e580634d492a (beaten during work)
 
-Green partial path:
-- `exclude_zero_readers` is fully proved: if no gate lists wire 0 among its inputs, the circuit
-  cannot match PetersenEdgeOR under the polarity presentation for every `pol`, via dependence of
-  edgeF on vertex 0 (witness pair `x = (0∨1)` / `x' = {1}`) and the `output = 0` sub-case.
+Statement (from .pnp/L-meta-2744.json):
+- Petersen-minus shard, first gate OR(x_4, x_6) on wire 9.
+- Hypothesis: ∃ second gate (gates[1]? = some).
+- Conclusion: 16 ≤ circuit size.
+- Step 1 of 2 for R_meta_1678_2; sibling L-meta-2746 = no second gate.
 
-Blocked:
-- `exclude_one_reader` (exactly one gate reads wire 0, FanInTwo, `C.size ≤ 14`) remains open.
-- Randomized and small-circuit Python search found a witness for every sampled circuit, so the
-  statement appears true, but a repo-scale proof needs the same kind of exhaustive/SAT certificate
-  used in sibling lemmas (e.g. L-meta-1672 / L-meta-2042 families), adapted to:
-    - at most one `inputs.contains 0`
-    - mismatch for `circuitFun 9 C (present pol ·)` vs fixed `edgeF`
-    - all `pol : Bool`
-- A structurally attempted `circuitFun_pivot` lemma is false in general (e.g. `OR(0,1)` output).
+Sibling pattern in repo:
+- R_meta_1678_2.lean — cut by second gate present vs absent (OR on wires 4,6).
+- L_meta_2155.lean — short proof for OR(x_0,x_4) when gates[1]? = none (exfalso).
+- L_meta_1672.lean — ~7k-line SAT/DP certificate for AND(x_4,x_6), full 16-gate bound.
+- R_meta_1676_1.lean — further cut by second-gate op (and/or/not/none) for OR(x_0,x_4).
+- No L_meta leaf yet for “second gate exists” + OR first gate on Petersen-minus.
 
-Next steps to complete (not done here):
-1. SAT/DP enumeration or isomorphism-class split on the unique reader gate.
-2. Or reduce via R-meta-2309-style contraction then reuse a zero-reader bound.
+Blocked because:
+- L-meta-2744 is a leaf, not an R_meta recursor; imports restricted to Mathlib + PEqualNP.Defs.
+- Closing it requires exhaustive case analysis (desk sketch) or a new certificate adapting
+  Base1007/Main1672 from L_meta_1672 with wire9_sig changed from AND (bin false raw4 raw6)
+  to OR (bin true raw4 raw6), plus restriction that gates.drop 1 is nonempty.
+- No upstream certificate or L_meta_2744/2746 in brilliant-hq/pequalnp-proofs; no generator in repo.
 
-Build: `lake build PEqualNP.Outside.L_meta_2541` fails on `sorry` in `exclude_one_reader`.
+Reasonable next steps:
+1. Post smaller gaps via R_meta_1676_1-style split on gates[1].op (and / or / not) for OR(x_4,x_6).
+2. Run external DP/SAT search (same pipeline as L_meta_1672) for ≤15 gates with fixed OR first gate
+   and ≥1 tail gate; embed result as BitVec tables + Live/run spine.
+3. Prove sibling L-meta-2746 first (likely L_meta_2155-style contradiction when gates[1]? = none).
+
+Build: N/A — no L_meta_2744.lean without sorry.
