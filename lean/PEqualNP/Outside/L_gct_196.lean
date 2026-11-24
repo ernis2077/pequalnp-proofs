@@ -121,7 +121,7 @@ def pQ (t:aC):ℂ:=(∑j,∑l,if j=l then 0 else ∑a:Fin 4,∑b:Fin 4,if a<b th
 def pR (t:aC):ℂ:=(∑j,∑l,∑m,if j=l∨j=m∨l=m then 0 else ∑a:Fin 4,∑b:Fin 4,∑c:Fin 4,if a<b∧b<c then t (a,j)*t (b,l)*t (c,m) else 0)
 def yW (t:aC):ℂ:=(∑j,∑l,∑m,∑n,if j=l∨j=m∨j=n∨l=m∨l=n∨m=n then 0 else t (0,j)*t (1,l)*t (2,m)*t (3,n))
 lemma vH (f:Fin 7→ℂ):
-  ∑j,f j=f 0+f 1+f 2+f 3+f 4:=by
+  ∑j,f j=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by
  simp[Fin.sum_univ_succ];ring
 set_option maxRecDepth 65536 in
 set_option maxHeartbeats 12000000 in
@@ -400,7 +400,7 @@ lemma sY (x y:aC):B x y=B y x:=by simp only[B,kK,mul_comm]
 lemma qS (x y z:aC):B (x+y) z=B x z+B y z:=by simp only[B,gR,gC,kK,aS,cW,Pi.add_apply,add_mul,Finset.sum_add_distrib];ring
 lemma kR (x y z:aC):B x (y+z)=B x y+B x z:=by rw[sY x,qS,sY y,sY z]
 lemma fH (f:Fin 7→ℂ):
-  ∑j,f j=f 0+f 1+f 2+f 3+f 4:=by
+  ∑j,f j=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by
  simp[Fin.sum_univ_succ];ring
 set_option maxHeartbeats 2000000 in
 set_option maxRecDepth 10000 in
@@ -1387,7 +1387,7 @@ end Ac.Ae
 namespace Ac.Ae
 open Aa
 lemma aC1 (f:F→ℂ):
-  ∑i,f i=f 0+f 1+f 2+f 3+f 4:=by
+  ∑i,f i=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by
  simp[Fin.sum_univ_succ];ring
 lemma zC (i:F):i=0∨i=1∨i=2∨i=3∨i=4:=by decide+revert
 set_option maxRecDepth 65536 in
@@ -2268,7 +2268,7 @@ def bW (x:aC):cI:=fun p=>x (p.1,Fin.castLE (by decide) p.2)
 def eV:aC→ₗ[ℂ] cI:=LinearMap.funLeft ℂ ℂ (fun p:Fin 4×Fin 2=>(p.1,Fin.castLE (by decide) p.2))
 def bC (x:aC) (i:Fin 4):ℂ:=x (i,2)+x (i,3)+x (i,4)
 def eM (x:aC):ℂ:=bC x 0*bC x 1-(x (0,2)*x (1,2)+x (0,3)*x (1,3)+x (0,4)*x (1,4))
-lemma fH (f:Fin 7→ℂ):∑j,f j=f 0+f 1+f 2+f 3+f 4:=by simp[Fin.sum_univ_succ];ring
+lemma fH (f:Fin 7→ℂ):∑j,f j=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by simp[Fin.sum_univ_succ];ring
 lemma mO {x:aC}
   (g:∀i:Fin 4,2≤ i→∀j:Fin 7,2≤j→x (i,j)=0)
   (h:bC x 0=0) (k:bC x 1=0) (p:eM x=0)
@@ -2513,7 +2513,7 @@ lemma fW (a b:P→ₗ[ℂ] Row)
   ·apply fV a t S f
    ·intro x i p;have h:lV a i=0:=not_not.mp (p∘(e i).mpr);exact LinearMap.congr_fun h x
    ·simpa only[kW] using d
-  ·have A:Sᶜ.card+S.card=5:=by simp
+  ·have A:Sᶜ.card+S.card=7:=by simp
    apply fV b w Sᶜ (by omega)
    ·intro x i p;have u:i∈S:=by simpa using p
     exact LinearMap.congr_fun ((g i).resolve_left ((e i).mp u)) x
@@ -2533,7 +2533,7 @@ def aL (a b:Row) (i j:Fin 7):ℂ:=a i*b j+a j*b i
 def dQ (a b:Row):ℂ:=∑i:Fin 7,∑j:Fin 7,if i<j then aL a b i j else 0
 def dL (a b:Row):Matrix (Fin 7) (Fin 7) ℂ:=fun i j=>if i=j then 0 else ∑c:Fin 7,∑d:Fin 7,if c<d∧c≠i∧c≠j∧d≠i∧d≠j then aL a b c d else 0
 lemma vH (f:Fin 7→ℂ):
-  ∑i,f i=f 0+f 1+f 2+f 3+f 4:=by
+  ∑i,f i=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by
  simp[Fin.sum_univ_succ];ring
 set_option maxHeartbeats 3000000 in
 lemma iF (a b:Row) (i:Fin 7):
@@ -2618,7 +2618,7 @@ lemma sA (S:Submodule ℂ (Fin 3→ℂ))
    simp[A,B,C,jV];ring
   _=0:=by rw[c,d];ring
 lemma aC6 (f:Fin 7→ℂ):
-  ∑i,f i=f 0+f 1+f 2+f 3+f 4:=by
+  ∑i,f i=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by
  simp[Fin.sum_univ_succ];ring
 lemma oN (n:Fin 7→ℂ):
   6*e3 n=(∑i,n i)^3-3*(∑i,n i)*(∑i,n i^2)+2*(∑i,n i^3):=by
@@ -2991,9 +2991,9 @@ lemma uH {L:Submodule ℂ aC} (hL:aD L) {Y U T:aC} {s u:ℂ}
    rw[fU hL (iJ a (by simpa using iJ c b 1) k),fU hL (iJ a b k)],
   fun k=>by rw[fU hL (iJ a c k),fU hL a];simp⟩
 lemma rB (f:Fin 7→ℂ):
-  ∑i,f i=f 0+f 1+f 2+f 3+f 4:=by
+  ∑i,f i=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by
  simp[Fin.sum_univ_seven,add_assoc]
-lemma aHg (f:Fin 7→ℂ):∑j,f j=f 0+f 1+f 2+f 3+f 4:=rB f
+lemma aHg (f:Fin 7→ℂ):∑j,f j=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=rB f
 lemma aB3 {Y:aC} {z:jH} (a:aB Y=z) (r:Fin 4) (c:Fin 7)
   (d:2≤ r.val) (b:2≤ c.val):
   Y (r,c)=z (⟨r.val-2,by omega⟩,⟨c.val-2,by omega⟩):=by
@@ -3387,7 +3387,7 @@ lemma wJ {L:Submodule ℂ aC} (hL:aD L) (o:aX L=8)
   ·subst r;exact sub_eq_zero.mp (d c).2
   ·exact k t (d c).1 r l
 lemma fH (f:Fin 7→ℂ):
-  ∑j,f j=f 0+f 1+f 2+f 3+f 4:=by
+  ∑j,f j=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by
  simp[Fin.sum_univ_succ];ring
 lemma aHy (L:Submodule ℂ aC):(1:bI)∈W L:=(show Submodule.span ℂ {(1:bI)}≤W L from le_sup_right) (Submodule.mem_span_singleton_self _)
 lemma aHz {L:Submodule ℂ aC} (hL:aD L) {v:aH} (b:bF 0 v∈L)
@@ -3407,7 +3407,7 @@ lemma wK {L:Submodule ℂ aC} (hL:aD L) (b:aX L=8)
    have h:=fH fun j=>x (r,j)
    rw[a r 0,a r 1,a r 2,a r 3,a r 4] at h;linear_combination-2*h/3
   exact funext fun q=>by rw[a q.1 q.2,s,zero_div];rfl
- rw[z,finrank_bot,aGv hL b f] at e;have c:(univ:Finset (Fin 7)).card=5:=rfl;omega
+ rw[z,finrank_bot,aGv hL b f] at e;have c:(univ:Finset (Fin 7)).card=7:=rfl;omega
 lemma wL {L:Submodule ℂ aC} (hL:aD L) (f:aX L=8)
   (g:u L 3=1) {v:aH} (c:bF 0 v∈L) {j:Fin 7}
   (a:v j=0) (b:∀k≠j,v k≠0):False:=by
@@ -5554,7 +5554,7 @@ lemma aBc {L:Submodule ℂ aC} {f:kD} (b:∀i,Function.Injective (f i))
   bD 0 0 (f 2 v) (wY f v)∈L:=by
  have h:=((xY b a (cM f ![0,0,v,-v])).mpr ⟨v,rfl⟩).1;have e:cM f ![0,0,v,-v]=bD 0 0 (f 2 v) (wY f v):=by funext ⟨r,c⟩;fin_cases r<;>simp[cM,bD,wY]
  rwa [e] at h
-lemma aFp (f:F→ℂ):∑i,f i=f 0+f 1+f 2+f 3+f 4:=by simp[Fin.sum_univ_succ];ring
+lemma aFp (f:F→ℂ):∑i,f i=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by simp[Fin.sum_univ_succ];ring
 lemma wZ {L:Submodule ℂ aC} (hL:aD L) {a b:aH}
   (h:bD 0 0 a b∈L):cS a+cS b=0∧dQ a b=0:=by
  have c:=Ad.cT hL h;have d:cW (bD 0 0 a b)=cS a+cS b:=by simp[cW,bD,Fin.sum_univ_four,Finset.sum_add_distrib]
@@ -5574,7 +5574,7 @@ lemma yS {a b:aH} (p:kS a b):
  rcases p with⟨i,c,d,_,e⟩|⟨i,j,h,c,_,d,_,e,_,l,_⟩
  ·obtain⟨j,g⟩:=exists_ne i;have z:cS a=a i:=Finset.sum_eq_single i (fun k _ f=>(e k f).1) (by simp);exact⟨i,j,g,c,d,fun h=>c (z.symm.trans h),fun k f _=>e k f⟩
  ·exact⟨i,j,h.symm,c,d,l,e⟩
-lemma xZ (f:F→ℂ):∑i,f i=f 0+f 1+f 2+f 3+f 4:=by simp[Fin.sum_univ_succ];ring
+lemma xZ (f:F→ℂ):∑i,f i=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by simp[Fin.sum_univ_succ];ring
 lemma aFq (a b:aH):dQ a b=cS a*cS b- ∑i,a i*b i:=by simp(config:={decide:=true}) only[dQ,aL,cS,xZ,ite_true,ite_false,zero_add,add_zero];ring
 end Ac.Ba
 namespace Ac.A5
@@ -6393,7 +6393,7 @@ def pH (B:aC) (r:Fin 4) (j:Fin 3):ℂ:=
 def dP (X U:aC) (r:Fin 4):ℂ:=U (r,0)*(X (2,1)+X (3,1))+U (r,1)*(X (2,0)+X (3,0))
 def mF (X U B:aC) (j:Fin 3):ℂ:=dP X U 1*pH B 0 j+dP X U 0*pH B 1 j
 lemma xZ (f:Fin 7→ℂ):
-  ∑i,f i=f 0+f 1+f 2+f 3+f 4:=by
+  ∑i,f i=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by
  simp[Fin.sum_univ_succ];ring
 set_option maxRecDepth 65536 in
 set_option maxHeartbeats 4000000 in
@@ -6807,7 +6807,7 @@ lemma aAg (X:aC) {r o:Fin 4} (d:aFw r o)
     ip (eH X 2) (eH X 3)):=by
  have b (i:Fin 4) (j:Fin 3) (a:i≠r):X (i,Fin.natAdd 2 j)=0:=by rcases d with⟨rfl,rfl⟩ | ⟨rfl,rfl⟩<;>fin_cases i<;>first | contradiction | exact congrFun e j | exact congrFun c (0,j) | exact congrFun c (1,j)
  have h (i:Fin 4) (j:Fin 7) (a:i≠r) (g:2≤j.val):X (i,j)=0:=by fin_cases j<;>first | contradiction | exact b i 0 a | exact b i 1 a | exact b i 2 a
- have xZ (f:Fin 7→ℂ):∑i,f i=f 0+f 1+f 2+f 3+f 4:=by simp[Fin.sum_univ_succ];ring
+ have xZ (f:Fin 7→ℂ):∑i,f i=f 0+f 1+f 2+f 3+f 4+f 5+f 6:=by simp[Fin.sum_univ_succ];ring
  rcases d with⟨rfl,rfl⟩|⟨rfl,rfl⟩<;>
   simp(config:={decide:=true}) (disch:=decide) only
    [pR,xZ,Fin.sum_univ_four,ite_true,ite_false,h,ip,eH,Aj.bC,
