@@ -2359,9 +2359,9 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                     · obtain ⟨C', hm', hsz', heq'⟩ :=
                         Elim.elim_absorb_false G C hmono hfun hedge (y1 - n) hy_idx
                           (fun u v huv => by
-                            have := hy_abs u v huv
-                            have hyw : y1 = n + (y1 - n) := by omega
-                            simpa [hyw] using this)
+                            have h := hy_abs u v huv
+                            rw [show y1 = n + (y1 - n) by omega] at h
+                            exact h)
                       exact hnot_smaller C' hm' (by rw [← hCsize]; exact hsz') heq'
                     · -- y1 live on some edge, and on e2 (since AND k true on e2)
                       -- Then y1→w after mono from that structure; forces hcopyk.
@@ -2394,9 +2394,9 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                   · obtain ⟨C', hm', hsz', heq'⟩ :=
                       Elim.elim_absorb_false G C hmono hfun hedge (x1 - n) hx_idx
                         (fun u v huv => by
-                          have := hx_abs u v huv
-                          have hxw : x1 = n + (x1 - n) := by omega
-                          simpa [hxw] using this)
+                          have h := hx_abs u v huv
+                          rw [show x1 = n + (x1 - n) by omega] at h
+                          exact h)
                     exact hnot_smaller C' hm' (by rw [← hCsize]; exact hsz') heq'
                   · push Not at hx_abs
                     exact hcopyk (fun xv hkv =>
