@@ -258,7 +258,9 @@ lemma cones_getD_eq (n : ℕ) (C : Circuit) (j : ℕ) (hj : j < C.gates.length) 
       (C.gates.take (j + 1) ++ C.gates.drop (j + 1)).foldl (coneStep n) [] := by
     unfold cones
     exact congrArg (List.foldl (coneStep n) []) hrest
-  rw [this, hstable, hfold_take, ← hlen_cs]
+  rw [this, hstable, hfold_take]
+  congr 1
+  exact hlen_cs.symm
 
 lemma cones_getD_prefix (n : ℕ) (C : Circuit) (i j : ℕ)
     (hj : j < C.gates.length) (hi : i < j) :
@@ -276,9 +278,10 @@ lemma cones_getD_prefix (n : ℕ) (C : Circuit) (i j : ℕ)
 
 lemma cone_mem_lt (n : ℕ) (C : Circuit) :
     ∀ t < C.gates.length, ∀ x ∈ (cones n C).getD t [], x < t := by
-  intro t ht x hx
+  intro t ht
   induction t using Nat.strong_induction_on with
   | ind t ih =>
+    intro x hx
     have hgett := cones_getD_eq n C t ht
     have hcs : ((C.gates.take t).foldl (coneStep n) []).length = t := by
       rw [foldl_cone_length, take_len_le _ _ (le_of_lt ht), List.length_nil, zero_add]
@@ -289,10 +292,9 @@ lemma cone_mem_lt (n : ℕ) (C : Circuit) :
     rcases hx2 with rfl | hx2
     · omega
     · have hwlt : w - n < t := by omega
-      have hpref : ((C.gates.take t).foldl (coneStep n) []).getD (w - n) [] =
-          (cones n C).getD (w - n) [] :=
-        (cones_getD_prefix n C (w - n) t ht hwlt).symm
-      have := ih (w - n) hwlt (lt_trans hwlt ht) x (by simpa [hpref] using hx2)
+      have hpref := cones_getD_prefix n C (w - n) t ht hwlt
+      have hx2' : x ∈ (cones n C).getD (w - n) [] := hpref.symm ▸ hx2
+      have := ih (w - n) hwlt (lt_trans hwlt ht) x hx2'
       omega
 
 lemma InCone_lt (n : ℕ) (C : Circuit) (i j : ℕ) (hj : j < C.gates.length)
@@ -308,10 +310,9 @@ lemma InCone_lt (n : ℕ) (C : Circuit) (i j : ℕ) (hj : j < C.gates.length)
   rcases hmem with rfl | hmem
   · omega
   · have hwlt : w - n < j := by omega
-    have hpref : ((C.gates.take j).foldl (coneStep n) []).getD (w - n) [] =
-        (cones n C).getD (w - n) [] :=
-      (cones_getD_prefix n C (w - n) j hj hwlt).symm
-    have := cone_mem_lt n C (w - n) (lt_trans hwlt hj) i (by simpa [hpref] using hmem)
+    have hpref := cones_getD_prefix n C (w - n) j hj hwlt
+    have hmem' : i ∈ (cones n C).getD (w - n) [] := hpref.symm ▸ hmem
+    have := cone_mem_lt n C (w - n) (lt_trans hwlt hj) i hmem'
     omega
 
 lemma InCone_of_input (n : ℕ) (C : Circuit) (j i : ℕ)
@@ -330,9 +331,10 @@ lemma InCone_of_input (n : ℕ) (C : Circuit) (j i : ℕ)
 lemma InCone_nest (n : ℕ) (C : Circuit) :
     ∀ b < C.gates.length, ∀ a, a ∈ (cones n C).getD b [] →
       ∀ c, c ∈ (cones n C).getD a [] → c ∈ (cones n C).getD b [] := by
-  intro b hb a ha c hc
+  intro b hb
   induction b using Nat.strong_induction_on with
   | ind b ih =>
+    intro a ha c hc
     have hgett := cones_getD_eq n C b hb
     have hcsb : ((C.gates.take b).foldl (coneStep n) []).length = b := by
       rw [foldl_cone_length, take_len_le _ _ (le_of_lt hb), List.length_nil, zero_add]
@@ -341,17 +343,15 @@ lemma InCone_nest (n : ℕ) (C : Circuit) :
     simp only [List.mem_filter, decide_eq_true_eq, hcsb] at hw2
     simp only [List.mem_cons] at ha2
     have hw2lt : w2 - n < b := by omega
-    have hpref : ((C.gates.take b).foldl (coneStep n) []).getD (w2 - n) [] =
-        (cones n C).getD (w2 - n) [] :=
-      (cones_getD_prefix n C (w2 - n) b hb hw2lt).symm
+    have hpref := cones_getD_prefix n C (w2 - n) b hb hw2lt
     refine List.mem_flatMap.mpr ⟨w2, ?_, ?_⟩
     · simpa [List.mem_filter, decide_eq_true_eq, hcsb] using hw2
     · simp only [List.mem_cons]
       rcases ha2 with rfl | ha2
-      · exact Or.inr (by simpa [hpref] using hc)
-      · have ha' : a ∈ (cones n C).getD (w2 - n) [] := by simpa [hpref] using ha2
+      · exact Or.inr (hpref ▸ hc)
+      · have ha' : a ∈ (cones n C).getD (w2 - n) [] := hpref.symm ▸ ha2
         have hc' := ih (w2 - n) hw2lt (lt_trans hw2lt hb) a ha' c hc
-        exact Or.inr (by simpa [hpref] using hc')
+        exact Or.inr (hpref ▸ hc')
 
 lemma InCone_trans (n : ℕ) (C : Circuit) (k i j : ℕ)
     (hj : j < C.gates.length) (hki : InCone n C k i) (hij : InCone n C i j) :
@@ -369,14 +369,12 @@ lemma InCone_trans (n : ℕ) (C : Circuit) (k i j : ℕ)
   · simpa [List.mem_filter, decide_eq_true_eq, hcs] using hw
   · simp only [List.mem_cons]
     have hwlt : w - n < j := by omega
-    have hpref : ((C.gates.take j).foldl (coneStep n) []).getD (w - n) [] =
-        (cones n C).getD (w - n) [] :=
-      (cones_getD_prefix n C (w - n) j hj hwlt).symm
+    have hpref := cones_getD_prefix n C (w - n) j hj hwlt
     rcases hmem with rfl | hmem
-    · exact Or.inr (by simpa [hpref] using hki)
-    · have hi_in : i ∈ (cones n C).getD (w - n) [] := by simpa [hpref] using hmem
+    · exact Or.inr (hpref ▸ hki)
+    · have hi_in : i ∈ (cones n C).getD (w - n) [] := hpref.symm ▸ hmem
       have hk_in := InCone_nest n C (w - n) (lt_trans hwlt hj) i hi_in k hki
-      exact Or.inr (by simpa [hpref] using hk_in)
+      exact Or.inr (hpref ▸ hk_in)
 
 lemma InCone_of_input_of_InCone (n : ℕ) (C : Circuit) (j i k : ℕ)
     (hj : j < C.gates.length) (hij : InCone n C i j)
@@ -394,16 +392,13 @@ lemma gateVal_and_reads {n : ℕ} (C : Circuit) {j : ℕ} (hj : j < C.gates.leng
     gateVal n C j x = true ↔ ∀ w ∈ (gateAt C j).inputs, readWire C x j w = true := by
   rw [gateVal_wires, wires_gate_ofFn C x j (gateAt C j)
     (by rw [gateAt_get hj]; exact List.getElem?_eq_getElem hj)]
-  simp only [hand, GateOp.eval, List.all_eq_true, List.mem_map, id, readWire]
+  simp only [hand, GateOp.eval, List.all_eq_true, List.mem_map, id]
   constructor
   · intro h w hw
-    by_cases hw' : w < n + j
-    · simp only [hw', ↓reduceIte]; exact h _ ⟨w, hw, rfl⟩
-    · simp only [hw', ↓reduceIte]; simpa [hw'] using h _ ⟨w, hw, rfl⟩
+    exact h _ ⟨w, hw, rfl⟩
   · intro h b hb
     obtain ⟨w, hw, rfl⟩ := hb
-    have := h w hw
-    by_cases hw' : w < n + j <;> simpa [hw'] using this
+    exact h w hw
 
 lemma graphFun_unit_false {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj]
     (u : Fin n) : graphFun G ∅ (unitInput u) = false := by
@@ -429,22 +424,24 @@ lemma false_on_units {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj]
     exact (Bool.false_ne_true this).elim
 
 lemma adj_of_graphFun_pair {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj]
-    {u v : Fin n} (_hne : u ≠ v) (h : graphFun G ∅ (pairInput u v) = true) :
+    {u v : Fin n} (hne : u ≠ v) (h : graphFun G ∅ (pairInput u v) = true) :
     G.Adj u v := by
   simp only [graphFun, Bool.or_eq_true, decide_eq_true_eq] at h
   rcases h with hA | hE
   · obtain ⟨a, ha, _⟩ := hA
     exact (Finset.notMem_empty a ha).elim
   · obtain ⟨a, b, hab, ha, hb⟩ := hE
-    have ha' : a = u ∨ a = v := by simpa [pairInput] using ha
-    have hb' : b = u ∨ b = v := by simpa [pairInput] using hb
-    rcases ha' with rfl | rfl
-    · rcases hb' with rfl | rfl
-      · exact G.irrefl hab
-      · exact hab
-    · rcases hb' with rfl | rfl
-      · exact hab.symm
-      · exact G.irrefl hab
+    have ha' : a = u ∨ a = v := by
+      simp only [pairInput, decide_eq_true_eq] at ha; exact ha
+    have hb' : b = u ∨ b = v := by
+      simp only [pairInput, decide_eq_true_eq] at hb; exact hb
+    rcases ha' with hau | hav
+    · rcases hb' with hbu | hbv
+      · subst hau; subst hbu; exact (G.irrefl hab).elim
+      · subst hau; subst hbv; exact hab
+    · rcases hb' with hbu | hbv
+      · subst hav; subst hbu; exact hab.symm
+      · subst hav; subst hbv; exact (G.irrefl hab).elim
 
 lemma wire_true_iff_units {n : ℕ} (C : Circuit) (hmono : Monotone2 C)
     (j : ℕ) (hj : j < C.gates.length) (u v : Fin n)
@@ -481,16 +478,18 @@ lemma wire_true_iff_units {n : ℕ} (C : Circuit) (hmono : Monotone2 C)
       have hop := mono_op hmono hi_len
       constructor
       · intro htrue
-        rw [hw_eq, wires_gate_ofFn C _ i _ hg] at htrue
         rcases hop with hand | hor
         · have hfalse := hand_cone i hi hcone hand
-          rw [gateVal_wires, show n + i = w from hw_eq.symm, hfalse] at htrue
-          exact Bool.false_ne_true htrue
-        · simp only [hor, GateOp.eval, List.any_eq_true, List.mem_map, id] at htrue
+          have htrue' : gateVal n C i (pairInput u v) = true := by
+            rwa [gateVal_wires, ← hw_eq]
+          exact (Bool.false_ne_true (hfalse ▸ htrue')).elim
+        · rw [hw_eq, wires_gate_ofFn C _ i _ hg] at htrue
+          simp only [hor, GateOp.eval, List.any_eq_true, List.mem_map, id] at htrue
           obtain ⟨b, ⟨t, ht_in, rfl⟩, hbt⟩ := htrue
           have ht_lt : t < n + i := by
-            by_contra ht_ge; push_neg at ht_ge
-            simp only [ht_ge, ↓reduceIte] at hbt
+            by_contra hnge
+            have : ¬ t < n + i := hnge
+            simp only [this, ↓reduceIte] at hbt
             exact Bool.false_ne_true hbt
           simp only [ht_lt, ↓reduceIte] at hbt
           have ht_cone : t < n ∨ InCone n C (t - n) j := by
@@ -498,9 +497,9 @@ lemma wire_true_iff_units {n : ℕ} (C : Circuit) (hmono : Monotone2 C)
             · exact Or.inl ht_n
             · have ht_gate : n ≤ t := Nat.le_of_not_lt ht_n
               have htk : t - n < i := by omega
-              have hinp : n + (t - n) ∈ (gateAt C i).inputs := by
-                simpa [Nat.sub_add_cancel ht_gate] using ht_in
-              exact Or.inr (InCone_of_input_of_InCone n C j i (t - n) hj hcone hinp htk)
+              have hinp' : n + (t - n) ∈ (gateAt C i).inputs := by
+                rwa [Nat.add_sub_of_le ht_gate]
+              exact Or.inr (InCone_of_input_of_InCone n C j i (t - n) hj hcone hinp' htk)
           have ih_t := ih t (by omega) (by omega) ht_cone
           rcases ih_t.mp hbt with hu | hv
           · refine Or.inl ?_
@@ -532,11 +531,11 @@ lemma read_true_iff_units {n : ℕ} (C : Circuit) (hmono : Monotone2 C)
       · have : n ≤ w := Nat.le_of_not_lt hwn
         have hi : w - n < j := by omega
         have hinp : n + (w - n) ∈ (gateAt C j).inputs := by
-          simpa [Nat.sub_add_cancel this] using hw_in
+          rwa [Nat.add_sub_of_le this]
         exact Or.inr (InCone_of_input n C j (w - n) hj hinp hi)
     exact (wire_true_iff_units C hmono j hj u v hand_cone w hw hincone).mp hpair
   · simp only [hw, ↓reduceIte] at hpair
-    exact Bool.false_ne_true hpair
+    exact (Bool.false_ne_true hpair).elim
 
 lemma biclique_c4 {n : ℕ} (G : SimpleGraph (Fin n))
     (hc4 : ∀ a b c d : Fin n, a ≠ c → b ≠ d →
@@ -566,45 +565,50 @@ lemma star_of_and {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj]
     Finset.univ.filter fun x => readWire C (unitInput x) j right = true
   have hfan : inputs.length ≤ 2 := mono_fanin hmono hj
   have hfalse_unit := false_on_units G C j hsupp
-  have inputs_cases (P : Prop)
-      (h0 : inputs = [] → P)
-      (h1 : ∀ w0, inputs = [w0] → P)
-      (h2 : ∀ w0 w1, inputs = [w0, w1] → P) : P := by
-    match hi : inputs with
-    | [] => exact h0 hi
-    | [w0] => exact h1 w0 hi
-    | w0 :: w1 :: rest =>
-      have hlen : rest.length + 2 ≤ 2 := by
-        have := hfan; simp only [hi, List.length_cons] at this; omega
-      have hrest : rest = [] := List.eq_nil_of_length_eq_zero (by omega)
-      subst hrest
-      exact h2 w0 w1 hi
   have hall_of_LR (x : Fin n → Bool)
       (hL : readWire C x j left = true) (hR : readWire C x j right = true) :
-      ∀ w ∈ inputs, readWire C x j w = true := by
+      ∀ w ∈ (gateAt C j).inputs, readWire C x j w = true := by
     intro w hw
-    refine inputs_cases _ ?_ ?_ ?_
-    · intro hi; simp [hi] at hw
-    · intro w0 hi; simp only [hi, List.mem_singleton] at hw; subst hw
-      simpa [left, hi] using hL
-    · intro w0 w1 hi
-      simp only [hi, List.mem_cons, List.mem_singleton] at hw
-      simp only [left, right, hi] at hL hR
-      rcases hw with rfl | rfl
-      · exact hL
-      · exact hR
+    cases hinputs : (gateAt C j).inputs with
+    | nil => simp [hinputs] at hw
+    | cons a rest =>
+      cases hrest : rest with
+      | nil =>
+        have hw' : w = a := by simpa [hinputs, hrest, List.mem_singleton] using hw
+        have hleft : left = a := by simp [left, inputs, hinputs, hrest]
+        subst hw'; simpa [hleft] using hL
+      | cons b rest' =>
+        have hlen : rest'.length + 2 ≤ 2 := by
+          have := hfan
+          simp only [inputs, hinputs, hrest, List.length_cons] at this
+          omega
+        have hrest' : rest' = [] := List.eq_nil_of_length_eq_zero (by omega)
+        subst hrest'
+        have hw' : w = a ∨ w = b := by
+          simpa [hinputs, hrest, List.mem_cons, List.mem_singleton] using hw
+        have hleft : left = a := by simp [left, inputs, hinputs, hrest]
+        have hright : right = b := by simp [right, inputs, hinputs, hrest]
+        rcases hw' with rfl | rfl
+        · simpa [hleft] using hL
+        · simpa [hright] using hR
   have hcross : ∀ u ∈ A, ∀ v ∈ B, u ≠ v → G.Adj u v := by
     intro u hu v hv hne
     have hlu : readWire C (unitInput u) j left = true := (Finset.mem_filter.mp hu).2
     have hrv : readWire C (unitInput v) j right = true := (Finset.mem_filter.mp hv).2
+    have hltL : left < n + j := by
+      by_contra hnge
+      simp only [readWire, hnge, ↓reduceIte] at hlu
+      exact Bool.false_ne_true hlu
+    have hltR : right < n + j := by
+      by_contra hnge
+      simp only [readWire, hnge, ↓reduceIte] at hrv
+      exact Bool.false_ne_true hrv
     have hpairL : readWire C (pairInput u v) j left = true := by
-      simp only [readWire] at hlu ⊢; split_ifs
-      · exact wires_mono_unit_pair C hmono u v left hlu
-      · exact hlu
+      simp only [readWire, hltL, ↓reduceIte] at hlu ⊢
+      exact wires_mono_unit_pair C hmono u v left hlu
     have hpairR : readWire C (pairInput u v) j right = true := by
-      simp only [readWire] at hrv ⊢; split_ifs
-      · exact wires_mono_unit_pair' C hmono u v right hrv
-      · exact hrv
+      simp only [readWire, hltR, ↓reduceIte] at hrv ⊢
+      exact wires_mono_unit_pair' C hmono u v right hrv
     have hgate : gateVal n C j (pairInput u v) = true :=
       (gateVal_and_reads C hj hand _).2 (hall_of_LR _ hpairL hpairR)
     exact adj_of_graphFun_pair G hne (hsupp _ hgate)
@@ -620,7 +624,7 @@ lemma star_of_and {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj]
     Finset.disjoint_left.mp hdisj hu (heq ▸ hv)
   have hcard : A.card ≤ 1 ∨ B.card ≤ 1 := by
     by_contra h
-    push_neg at h
+    push Not at h
     obtain ⟨a1, a2, ha1, ha2, hane⟩ := Finset.one_lt_card_iff.mp h.1
     obtain ⟨b1, b2, hb1, hb2, hbne⟩ := Finset.one_lt_card_iff.mp h.2
     exact biclique_c4 G hc4 hane hbne
@@ -637,43 +641,52 @@ lemma star_of_and {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj]
     have hall := (gateVal_and_reads C hj hand _).1 htrue
     have hcone' : ∀ i < j, InCone n C i j → (gateAt C i).op = GateOp.and →
         gateVal n C i (pairInput u v) = false := fun i hi h1 h2 => hcone i hi h1 h2
-    refine inputs_cases _ ?_ ?_ ?_
-    · intro hi
+    cases hinputs : (gateAt C j).inputs with
+    | nil =>
       have ht : gateVal n C j (unitInput u) = true := by
-        rw [gateVal_and_reads C hj hand]; simp [inputs, hi]
-      have hf := hfalse_unit u
-      exact Bool.false_ne_true (hf ▸ ht)
-    · intro w0 hi
-      have hread : readWire C (pairInput u v) j w0 = true := hall w0 (by simp [hi])
-      have hdecomp := read_true_iff_units C hmono j hj u v hcone'
-        (by simp [hi]) hread
-      rcases hdecomp with hu | hv
-      · have ht : gateVal n C j (unitInput u) = true := by
-          rw [gateVal_and_reads C hj hand]
-          intro w hw; simp only [hi, List.mem_singleton] at hw; subst hw; exact hu
-        exact Bool.false_ne_true (hfalse_unit u ▸ ht)
-      · have ht : gateVal n C j (unitInput v) = true := by
-          rw [gateVal_and_reads C hj hand]
-          intro w hw; simp only [hi, List.mem_singleton] at hw; subst hw; exact hv
-        exact Bool.false_ne_true (hfalse_unit v ▸ ht)
-    · intro w0 w1 hi
-      have hL := read_true_iff_units C hmono j hj u v hcone'
-        (by simp [hi]) (hall w0 (by simp [hi]))
-      have hR := read_true_iff_units C hmono j hj u v hcone'
-        (by simp [hi]) (hall w1 (by simp [hi]))
-      have memA : ∀ x, x ∈ A ↔ readWire C (unitInput x) j w0 = true := by
-        intro x; simp [A, left, hi]
-      have memB : ∀ x, x ∈ B ↔ readWire C (unitInput x) j w1 = true := by
-        intro x; simp [B, right, hi]
-      rcases hL with huL | hvL
-      · have huA : u ∈ A := (memA u).mpr huL
-        rcases hR with huR | hvR
-        · exact (Finset.disjoint_left.mp hdisj huA ((memB u).mpr huR)).elim
-        · exact Or.inl ⟨huA, (memB v).mpr hvR⟩
-      · have hvA : v ∈ A := (memA v).mpr hvL
-        rcases hR with huR | hvR
-        · exact Or.inr ⟨(memB u).mpr huR, hvA⟩
-        · exact (Finset.disjoint_left.mp hdisj hvA ((memB v).mpr hvR)).elim
+        rw [gateVal_and_reads C hj hand]
+        intro w hw; simp [hinputs] at hw
+      exact (Bool.false_ne_true (hfalse_unit u ▸ ht)).elim
+    | cons w0 rest =>
+      cases hrest : rest with
+      | nil =>
+        have hread : readWire C (pairInput u v) j w0 = true :=
+          hall w0 (by simp [hinputs, hrest])
+        have hdecomp := read_true_iff_units C hmono j hj u v hcone' w0
+          (by simp [hinputs, hrest]) hread
+        rcases hdecomp with hu | hv
+        · have ht : gateVal n C j (unitInput u) = true := by
+            rw [gateVal_and_reads C hj hand]
+            intro w hw; simp only [hinputs, hrest, List.mem_singleton] at hw; subst hw; exact hu
+          exact (Bool.false_ne_true (hfalse_unit u ▸ ht)).elim
+        · have ht : gateVal n C j (unitInput v) = true := by
+            rw [gateVal_and_reads C hj hand]
+            intro w hw; simp only [hinputs, hrest, List.mem_singleton] at hw; subst hw; exact hv
+          exact (Bool.false_ne_true (hfalse_unit v ▸ ht)).elim
+      | cons w1 rest' =>
+        have hlen : rest'.length + 2 ≤ 2 := by
+          have := hfan
+          simp only [inputs, hinputs, hrest, List.length_cons] at this
+          omega
+        have hrest' : rest' = [] := List.eq_nil_of_length_eq_zero (by omega)
+        subst hrest'
+        have hL := read_true_iff_units C hmono j hj u v hcone' w0
+          (by simp [hinputs, hrest]) (hall w0 (by simp [hinputs, hrest]))
+        have hR := read_true_iff_units C hmono j hj u v hcone' w1
+          (by simp [hinputs, hrest]) (hall w1 (by simp [hinputs, hrest]))
+        have memA : ∀ x, x ∈ A ↔ readWire C (unitInput x) j w0 = true := by
+          intro x; simp [A, left, inputs, hinputs, hrest]
+        have memB : ∀ x, x ∈ B ↔ readWire C (unitInput x) j w1 = true := by
+          intro x; simp [B, right, inputs, hinputs, hrest]
+        rcases hL with huL | hvL
+        · have huA : u ∈ A := (memA u).mpr huL
+          rcases hR with huR | hvR
+          · exact (Finset.disjoint_left.mp hdisj huA ((memB u).mpr huR)).elim
+          · exact Or.inl ⟨huA, (memB v).mpr hvR⟩
+        · have hvA : v ∈ A := (memA v).mpr hvL
+          rcases hR with huR | hvR
+          · exact Or.inr ⟨(memB u).mpr huR, hvA⟩
+          · exact (Finset.disjoint_left.mp hdisj hvA ((memB v).mpr hvR)).elim
   rcases hcard with hA | hB
   · by_cases hA0 : A.card = 0
     · have hAempty : A = ∅ := Finset.card_eq_zero.mp hA0
