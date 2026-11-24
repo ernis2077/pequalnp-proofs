@@ -1,0 +1,32 @@
+VERDICT: BLOCKED (L-meta-670)
+
+Reason: missing_lemma
+
+Statement (from .pnp/L-meta-670.json):
+  ¬ PEqualNP.MetaComplexity.HasCircuitSize 9
+    (fun x : Fin 9 → Bool => (x 0 && x 1) || (x 1 && x 2) || (x 2 && x 3) || (x 3 && x 4) || (x 4 && x 0) ||
+      (x 0 && x 5) || (x 1 && x 6) || (x 2 && x 7) || (x 3 && x 8) ||
+      (x 5 && x 7) || (x 6 && x 8) || (x 8 && x 5)) 15
+
+Branch: cursor/l-meta-670-49b5
+Target: lean/PEqualNP/Outside/L_meta_670.lean (imports Mathlib + PEqualNP.Defs only; not created)
+
+What exists:
+- Positive upper bound: L_meta_1001 (16-gate witness).
+- Reduction skeleton: R_meta_670_713 (first-gate normalize + 2 NOT + 6 symmetric pair cases → size 16).
+- Alternate split: R_meta_670_718 (clean minimum reps on wires 4,6,7) — needs child steps.
+- One SAT certificate case finished: L_meta_1672 (+ siblings L_meta_1912/1914/2024/2042/2171) for first gate AND(4,6) with 16 ≤ C.size.
+
+What is missing for a green L_meta_670 (per gap SKETCH and reductions):
+1. normalize: every ≤15-gate circuit for this function rewrites to a ≤15-gate circuit whose output wire is ¬(x i) or AND/OR of a canonical symmetric pair from [(0,1),(0,2),(0,3),(0,4),(0,6),(4,6)].
+2. For each symmetry class of first gate (14 NOT/pair cases + constant/copy), a desk row with a SAT certificate replayed in Lean (R_meta_1665–1676 family reductions exist as R_meta_*.lean hypotheses only; no matching L_meta_* children in repo except the (4,6) AND family above).
+3. Assembly: instantiate R_meta_670_713 inside L_meta_670 — must be inlined in the single Defs-only file (no L_meta imports R_meta modules today).
+
+Build notes:
+- `lake build PEqualNP.Outside.R_meta_670_713` succeeds (reduction alone).
+- No `L_meta_670.lean`; no green path without the case certificate fleet.
+
+Next work (not done here):
+- Prove remaining first-gate case rows (see routes/lgp/own/filing/petersen/SKETCH.md on desk).
+- Prove normalize child for Petersen-minus-vertex on 9 wires.
+- Add L_meta_670.lean assembling R_meta_670_713 with those lemmas inlined (≈30 min once cases exist, per gap context).
