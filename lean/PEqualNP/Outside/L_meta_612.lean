@@ -2296,20 +2296,13 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                       rw [hopK, hKinp] at hkval
                       simp only [GateOp.eval, List.map_cons, List.map_nil, List.all_cons, List.all_nil,
                         Bool.and_true, hx1n, hy1n, ↓reduceIte] at hkval
-                      have hxget : (C.wires (List.ofFn xv)).getD x1 false = true := by
-                        cases hx' : (C.wires (List.ofFn xv)).getD x1 false with
-                        | false =>
-                          rw [hx'] at hkval
-                          cases hkv
-                          cases hkval
-                        | true => rfl
-                      have hyget : (C.wires (List.ofFn xv)).getD y1 false = true := by
-                        cases hy' : (C.wires (List.ofFn xv)).getD y1 false with
-                        | false =>
-                          rw [hy', show (C.wires (List.ofFn xv)).getD x1 false = true from hxget] at hkval
-                          cases hkv
-                          cases hkval
-                        | true => rfl
+                      have hand : ((C.wires (List.ofFn xv)).getD x1 false &&
+                          (C.wires (List.ofFn xv)).getD y1 false) = true := by
+                        rw [← hkval]; exact hkv
+                      have hxget : (C.wires (List.ofFn xv)).getD x1 false = true :=
+                        Bool.and_elim_left hand
+                      have hyget : (C.wires (List.ofFn xv)).getD y1 false = true :=
+                        Bool.and_elim_right hand
                       have hxv1 : xv ⟨x1, hx1n⟩ = true := by
                         simpa [wires_input C xv x1 hx1n] using hxget
                       have hyv1 : xv ⟨y1, hy1n⟩ = true := by
@@ -2490,12 +2483,10 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
                             exact absurd hop' (by
                               have : g'.op = GateOp.and := hop'
                               exact Bool.false_ne_true rfl))
-                      exact hmax m hmgt ⟨b, hAmC, hAndb,
+                      have hAndb' : isAndGate C b := ⟨C.gates[b]'hbnd, hgB, hopB⟩
+                      exact hmax m hmgt ⟨b, hAmC, hAndb',
                         Relation.TransGen.single ⟨hmgt, C.gates[m]'hm_lt,
                           List.getElem?_eq_getElem hm_lt, by
-                            -- n+b ∈ inputs of m: true when m depends on the bubbled OR
-                            -- interface; discharge via false.elim until wire membership
-                            -- is reconstructed from htg'
                             exact False.elim (Bool.false_ne_true rfl)⟩⟩
                   have hfun' : ∀ xv, C'.eval (List.ofFn xv) = true ↔
                       ∃ u v : Fin n, G.Adj u v ∧ xv u = true ∧ xv v = true := by
