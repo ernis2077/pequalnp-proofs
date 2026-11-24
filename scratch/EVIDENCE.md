@@ -51,11 +51,11 @@ Completeness + arc soundness ⇒ size-2 minterms of g are exactly the 52 edges; 
 **Likely `statement_seems_false`**: no ≤63 witness; cover architecture provably stuck at 64; local size-3 impossible; drop-one / merge / non-cover templates fail. Residual risk: an exotic unclean circuit outside these templates.
 
 ## Files
-- `scratch/search_arc63.py`
-- `scratch/search_merge63.py`
-- `scratch/search_collinear63.py`
-- `scratch/search_local5.py`
-- `scratch/search_share63.py`
-- `scratch/search_genetic63.py`
-- `scratch/ilp_or4.py`
-- `lean/PEqualNP/Outside/L_meta_1493.lean` (skeleton with `sorry` only — do not PR)
+- `scratch/EVIDENCE.md` (this file)
+- `scratch/search_arc63.py`, `search_arc63_fast.py`, `search_merge63.py`, `search_collinear63.py`
+- `scratch/search_local5.py`, `search_share63.py`, `search_genetic63.py`, `search_noncover63.py`
+- `scratch/ilp_or4.py`, `scratch/z3_size63.py` (Z3 free-circuit encoding; too large to decide in ≤90s)
+- `lean/PEqualNP/Outside/L_meta_1493.lean` (skeleton with `sorry` only — **do not PR**)
+
+## Desk
+Original lease `1117b728-…` expired `2026-11-24T02:22:18Z`. Re-acquire failed (desk cooldown / handed-back). Parent should release with `statement_seems_false` (or re-lease if a witness appears). Branch `cursor/l-meta-1493-49b5` on `ernis2077/pequalnp-proofs` has search evidence only — no proof PR.
