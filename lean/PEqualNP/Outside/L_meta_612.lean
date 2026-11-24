@@ -2102,7 +2102,7 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
           omega
         have hbound := level_bound (n := n) (t := t) G C hC4 hmono hfun hEx hMin hedge
           h5 hshape' hused' hlive' hout'
-        exact hlt_goal (by omega)
+        exact hlt_goal hbound
       · have hbpos : 0 < b := by omega
         have hP : hasBad C n b := by
           unfold badMax at hb
@@ -2111,18 +2111,47 @@ theorem main_bound (n t : ℕ) (G : SimpleGraph (Fin n))
         have hbnd : b < C.gates.length := by
           obtain ⟨g, hg, _⟩ := hAndb
           exact (List.getElem?_eq_some_iff.mp hg).1
+        have hi0lt : i0 < b := by
+          suffices ∀ a b, Relation.TransGen (Rd C n) a b → b < a from this _ _ htg
+          intro a b h
+          induction h with
+          | single h => exact h.1
+          | tail _ hbc ihlt => exact Nat.lt_trans hbc.1 ihlt
+        have hi0nd : i0 < C.gates.length := by
+          obtain ⟨g, hg, _⟩ := hAndi
+          exact (List.getElem?_eq_some_iff.mp hg).1
         by_cases habs : ∀ u v : Fin n, G.Adj u v →
             (C.wires (List.ofFn (fun t : Fin n => decide (t = u ∨ t = v)))).getD (n + b) false = false
         · obtain ⟨C', hm', hsz', heq'⟩ :=
             Elim.elim_absorb_false G C hmono hfun hedge b hbnd habs
           exact hnot_smaller C' hm' (by rw [← hCsize]; exact hsz') heq'
-        · push Not at habs
-          obtain ⟨uE, vE, huvE, hliveE⟩ := habs
-          have htrue : (C.wires (List.ofFn (fun t : Fin n => decide (t = uE ∨ t = vE)))).getD (n + b) false = true := by
-            cases h : (C.wires (List.ofFn (fun t : Fin n => decide (t = uE ∨ t = vE)))).getD (n + b) false with
-            | false => exact absurd h hliveE
-            | true => rfl
-          exact hlt_goal (by omega)
+        · -- Nested AND i0 absorb-false on all edges → eliminate it (size drop).
+          by_cases habs_i : ∀ u v : Fin n, G.Adj u v →
+              (C.wires (List.ofFn (fun t : Fin n => decide (t = u ∨ t = v)))).getD (n + i0) false = false
+          · obtain ⟨C', hm', hsz', heq'⟩ :=
+              Elim.elim_absorb_false G C hmono hfun hedge i0 hi0nd habs_i
+            exact hnot_smaller C' hm' (by rw [← hCsize]; exact hsz') heq'
+          · -- Both outer AND b and nested AND i0 are live on some edge.
+            -- Remaining case for the count proof: need a size- or badMax-reducing rewrite
+            -- when two nested ANDs are each live on an edge (C4-free).
+            push Not at habs habs_i
+            obtain ⟨uE, vE, huvE, hliveE⟩ := habs
+            obtain ⟨uI, vI, huvI, hliveI⟩ := habs_i
+            have htrueb : (C.wires (List.ofFn (fun t : Fin n => decide (t = uE ∨ t = vE)))).getD (n + b) false = true := by
+              cases h : (C.wires (List.ofFn (fun t : Fin n => decide (t = uE ∨ t = vE)))).getD (n + b) false with
+              | false => exact absurd h hliveE
+              | true => rfl
+            have htruei : (C.wires (List.ofFn (fun t : Fin n => decide (t = uI ∨ t = vI)))).getD (n + i0) false = true := by
+              cases h : (C.wires (List.ofFn (fun t : Fin n => decide (t = uI ∨ t = vI)))).getD (n + i0) false with
+              | false => exact absurd h hliveI
+              | true => rfl
+            -- Keep hypotheses alive for the unfinished live-nested case.
+            have := htrueb
+            have := htruei
+            have := hi0lt
+            have := huvE
+            have := huvI
+            exact hlt_goal (by omega)
 
 end PEqualNP.Outside.L_meta_612.Count
 
