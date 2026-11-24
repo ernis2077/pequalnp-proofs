@@ -33,7 +33,7 @@ def charB (s s' : Fin 21) : Bool :=
   (ks' == 2 && ks == 1 && (line s ∩ T ∩ line s').card == 0)
 
 set_option maxHeartbeats 1000000 in
-lemma charB_iff (s s' : Fin 21) :
+lemma charB_iff : ∀ s s' : Fin 21,
     charB s s' = true ↔
       (((line s ∩ T).card = 2 ∧ (line s' ∩ T).card = 2) ∨
        ((line s ∩ T).card = 2 ∧ (line s' ∩ T).card = 1 ∧ line s' ∩ T ∩ line s = ∅) ∨
@@ -160,33 +160,25 @@ lemma mutual_iff (c : Fin 21 → Bool) (s s' : Fin 21) :
         (∃ p ∈ line s' \ line s, (base c s' p ∩ line s).Nonempty)) := by
   simp [mutualB, hits_iff, Bool.and_eq_true]
 
+lemma next_maps_T :
+    ∀ v ∈ T, (if v = (2 : Fin 21) then (0 : Fin 21) else v + 1) ∈ T := by
+  decide
+
+lemma prev_maps_T :
+    ∀ v ∈ T, (if v = (0 : Fin 21) then (2 : Fin 21) else v - 1) ∈ T := by
+  decide
+
 lemma base_subset_T (c : Fin 21 → Bool) (s p : Fin 21) : base c s p ⊆ T := by
   unfold base
   split_ifs with hT h2 h1 hc
   · exact Finset.empty_subset _
   · exact Finset.sdiff_subset
-  · refine Finset.image_subset_iff.2 ?_
-    intro v hv
-    have hvT : v ∈ T := (Finset.mem_inter.mp hv).2
-    split_ifs
-    · exact Finset.mem_insert_self _ _
-    · have : v = (0 : Fin 21) ∨ v = (1 : Fin 21) ∨ v = (2 : Fin 21) := by
-        simpa [T, Finset.mem_insert, Finset.mem_singleton] using hvT
-      rcases this with rfl | rfl | rfl
-      · simp [T]
-      · simp [T]
-      · simp [T]
-  · refine Finset.image_subset_iff.2 ?_
-    intro v hv
-    have hvT : v ∈ T := (Finset.mem_inter.mp hv).2
-    split_ifs
-    · simp [T]
-    · have : v = (0 : Fin 21) ∨ v = (1 : Fin 21) ∨ v = (2 : Fin 21) := by
-        simpa [T, Finset.mem_insert, Finset.mem_singleton] using hvT
-      rcases this with rfl | rfl | rfl
-      · simp [T]
-      · simp [T]
-      · simp [T]
+  · intro x hx
+    rcases Finset.mem_image.mp hx with ⟨v, hv, rfl⟩
+    exact next_maps_T v (Finset.mem_of_mem_inter_right hv)
+  · intro x hx
+    rcases Finset.mem_image.mp hx with ⟨v, hv, rfl⟩
+    exact prev_maps_T v (Finset.mem_of_mem_inter_right hv)
   · simp [T]
 
 lemma mutual_of_empty_inter (c : Fin 21 → Bool) (s s' : Fin 21)
