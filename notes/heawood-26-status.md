@@ -1,21 +1,20 @@
 # Heawood ≤26 search status (L-meta-2732)
 
 ## Settled
-- Cover 27; ≤3 unclean / leave-k / 6-stars / freeze18–21 size-26 UNSAT
-- Clean ⇒ ≥27; AND-depth-1 ⇒ ≥27; star/edge-AND/OR-tree ⇒ ≥27
-- h=1 near-miss (6 full + 1 partial); pair_merge exhaustive h≥1
-- h2 prefix freeze18 UNSAT; h1 prefix freeze18 UNSAT (cadical)
-- Z3 FE 2h / CP-SAT 2h UNKNOWN; beam stuck
+- Cover 27; ≤3 unclean / 6-stars / freeze18–21 UNSAT; h1 & h2 prefix freeze18 UNSAT
+- Clean / AND-depth-1 / star+edgeAND architectures ⇒ ≥27
+- Near-miss h=1 exhaustive pair_merge cannot repair
+- Culled redundant solvers; focusing free / e4u / freeze15 / 4stars / ad2 / shards5
 
-## Open (~1d17h)
+## Open (~1d19h wall)
 | instance | conflicts | status |
 |----------|-----------|--------|
-| s26free cadical | ~128M | open |
-| s26free kissat-sat | ~220M+ | open |
-| s26_e4u | ~143M | open |
-| freeze15 | ~114M | open |
-| 4stars / ad2 / shards5-w2 | running | open |
-| CP-SAT unclean 24h | restarted | open |
+| s26free cadical | ~130M | open |
+| s26free kissat-sat | running | open |
+| s26_e4u kissat | ~143M+ | open |
+| freeze15 cadical | ~115M+ | open |
+| 4stars / ad2 / shards5-w2 / h1 freeze12 | running | open |
 
 ## Blockers
 - No witness; no free DRAT; L612 open; leases 410 offline
+- Branch `L-meta-2732` building
